@@ -46,7 +46,7 @@
     margin: 0 auto;
   }
   header h1 {
-    margin: 0; padding-right: 110px;
+    margin: 0; padding-right: 160px;
     font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;
     text-shadow: -2px -1px 0 var(--cyan), 2px 1px 0 var(--pink);
   }
@@ -225,15 +225,29 @@
     font-size: 14px; transition: .25s; pointer-events: none; max-width: 90%; text-align: center; z-index: 30;
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  body.locked header, body.locked main { display: none; }
+  .lock { position: fixed; inset: 0; z-index: 60; background: var(--ink); display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .lock[hidden] { display: none !important; }
+  .lock-card { width: 100%; max-width: 380px; color: #fff; text-align: center; }
+  .lock-card svg { width: 56px; height: 56px; color: #fff; filter: drop-shadow(-2px -1px 0 var(--cyan)) drop-shadow(2px 1px 0 var(--pink)); }
+  .lock-card h2 { margin: 18px 0 6px; font-size: 26px; letter-spacing: -0.02em; text-shadow: -2px -1px 0 var(--cyan), 2px 1px 0 var(--pink); }
+  .lock-card p { color: #b9b9c4; font-size: 14px; margin: 0 0 22px; line-height: 1.45; }
+  .lock-card .input { text-align: center; background: #1c1c24; border-color: #3a3a46; color: #fff; letter-spacing: .08em; }
+  .lock-card .input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(37,244,238,.25); }
+  .lock-card .btn { width: 100%; margin-top: 14px; }
+  .lock-card .lerr { color: #ff8a7a; font-size: 13.5px; min-height: 20px; margin-top: 14px; line-height: 1.45; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
-<body>
+<body class="locked">
 
 <header>
   <div class="hbtns">
     <button class="hbtn" id="openDb" type="button" aria-label="Database barang">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/><path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+    </button>
+    <button class="hbtn" id="openLock" type="button" aria-label="Kunci aplikasi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
     </button>
     <button class="hbtn" id="openSet" type="button" aria-label="Pengaturan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01A1.7 1.7 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1z"/></svg>
@@ -383,18 +397,7 @@
         <div class="unit"><input class="input" id="s_affiliasi" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
     </div>
 
-    <div class="sect">SAMBUNGAN SPREADSHEET</div>
-    <div class="field">
-      <label class="lbl" for="s_url">URL Apps Script (berakhiran /exec)</label>
-      <input class="input" id="s_url" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" spellcheck="false">
-    </div>
-    <div class="field" style="margin-bottom:8px">
-      <label class="lbl" for="s_kunci">Kunci</label>
-      <input class="input" id="s_kunci" type="text" placeholder="Sama dengan KUNCI di Code.gs" autocomplete="off" autocapitalize="off" spellcheck="false">
-    </div>
-    <button class="mini" id="testConn" type="button">Tes koneksi</button>
-    <div class="hint">Kosongkan URL kalau mau memakai database di HP ini saja.</div>
-    <div class="conn" id="connStatus"></div>
+
 
     <div class="err" id="setErr" role="alert"></div>
     <div class="actions">
@@ -403,6 +406,17 @@
       <button class="btn" id="setSave" type="button">Simpan</button>
     </div>
   </div>
+</div>
+
+<div class="lock" id="lockScreen">
+  <form class="lock-card" id="lockForm" autocomplete="off">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+    <h2>Kalkulator Paket Jajan</h2>
+    <p>Aplikasi ini terkunci. Masukkan kunci untuk membuka.</p>
+    <input class="input" id="lockInput" type="password" placeholder="Kunci" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+    <button class="btn" id="lockBtn" type="submit">Buka</button>
+    <div class="lerr" id="lockErr" role="alert"></div>
+  </form>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
@@ -435,7 +449,10 @@ let CFG = (function () {
 })();
 
 /* =============== DATABASE BARANG =============== */
-let CONN = bacaLS("pj-conn", { url: "", kunci: "" });
+/* ====== ISI SEKALI SAJA sebelum upload: URL aplikasi web Apps Script (berakhiran /exec) ====== */
+const SCRIPT_URL = "";
+/* ================================================================================== */
+let CONN = { url: SCRIPT_URL.trim(), kunci: bacaLS("pj-kunci", "") };
 let ITEMS = bacaLS("pj-items", []);       // [{id, nama, dus, isi}]
 let lastSync = bacaLS("pj-lastsync", null);
 let syncState = "";                        // "", "loading", "ok", "err"
@@ -449,36 +466,41 @@ const norm = (x) => ({ id: x.row, nama: String(x.nama), dus: Number(x.dus) || 0,
 function simpanItems() { simpanLS("pj-items", ITEMS); }
 
 async function panggil(conn, aksi, data) {
-  if (!conn.url) throw new Error("Spreadsheet belum disambungkan.");
+  if (!conn.url) throw new Error("URL Apps Script belum diisi di index.html.");
   let res, j;
   try {
-    if (aksi === "list") {
-      res = await fetch(conn.url + (conn.url.includes("?") ? "&" : "?") + "aksi=list&kunci=" + encodeURIComponent(conn.kunci || ""));
-    } else {
-      res = await fetch(conn.url, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ aksi, kunci: conn.kunci || "", ...data })
-      });
-    }
-  } catch (e) { throw new Error("Tidak bisa terhubung. Cek internet atau URL-nya."); }
+    res = await fetch(conn.url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ aksi, kunci: conn.kunci || "", ...data })
+    });
+  } catch (e) { throw new Error("Tidak bisa terhubung. Cek internet."); }
   try { j = await res.json(); }
   catch (e) { throw new Error("Jawaban bukan dari Apps Script. Pastikan akses deployment diset ke “Siapa saja”."); }
-  if (!j.ok) throw new Error(j.error || "Gagal.");
+  if (!j.ok) { const err = new Error(j.error || "Gagal."); err.kode = j.kode || ""; throw err; }
   return j;
 }
 
+// Dipakai setelah aplikasi terbuka. Kalau kunci sudah diganti di Apps Script, perangkat ini otomatis terkunci lagi.
+async function panggilAman(aksi, data) {
+  try { return await panggil(CONN, aksi, data); }
+  catch (e) {
+    if (e.kode === "KUNCI") kunciPerangkat("Kunci tidak berlaku lagi. Masukkan kunci yang baru.");
+    throw e;
+  }
+}
+
 async function sinkron(diam) {
-  if (!CONN.url) { syncState = ""; renderStatus(); return; }
+  if (!CONN.url || !CONN.kunci) { syncState = ""; renderStatus(); return; }
   syncState = "loading"; renderStatus();
   try {
-    const j = await panggil(CONN, "list");
+    const j = await panggilAman("list");
     ITEMS = (j.items || []).map(norm); simpanItems();
     lastSync = Date.now(); simpanLS("pj-lastsync", lastSync);
     syncState = "ok";
   } catch (e) {
     syncState = "err"; syncErr = e.message;
-    if (!diam) toast(e.message);
+    if (!diam && e.kode !== "KUNCI") toast(e.message);
   }
   syncTs = Date.now();
   renderStatus(); renderDb(); refreshPaket();
@@ -487,15 +509,9 @@ async function sinkron(diam) {
 async function simpanBarang(data, id) {
   const lama = id != null ? ITEMS.find(i => i.id === id) : null;
   if (ITEMS.some(i => i.id !== id && i.nama.toLowerCase() === data.nama.toLowerCase())) throw new Error("Barang dengan nama itu sudah ada.");
-  if (CONN.url) {
-    const j = await panggil(CONN, id != null ? "ubah" : "tambah", id != null ? { row: id, namaLama: lama.nama, ...data } : data);
-    ITEMS = j.items.map(norm);
-    lastSync = Date.now(); simpanLS("pj-lastsync", lastSync); syncState = "ok";
-  } else if (lama) {
-    Object.assign(lama, data);
-  } else {
-    ITEMS.push({ id: "L" + Date.now() + Math.random().toString(36).slice(2, 7), ...data });
-  }
+  const j = await panggilAman(id != null ? "ubah" : "tambah", id != null ? { row: id, namaLama: lama.nama, ...data } : data);
+  ITEMS = j.items.map(norm);
+  lastSync = Date.now(); simpanLS("pj-lastsync", lastSync); syncState = "ok";
   if (lama && lama.nama.toLowerCase() !== data.nama.toLowerCase()) {
     PAKET.forEach(r => { if (r.chosen && r.nama.toLowerCase() === lama.nama.toLowerCase()) r.nama = data.nama; });
   }
@@ -505,13 +521,9 @@ async function simpanBarang(data, id) {
 async function hapusBarang(id) {
   const lama = ITEMS.find(i => i.id === id);
   if (!lama) return;
-  if (CONN.url) {
-    const j = await panggil(CONN, "hapus", { row: id, namaLama: lama.nama });
-    ITEMS = j.items.map(norm);
-    lastSync = Date.now(); simpanLS("pj-lastsync", lastSync); syncState = "ok";
-  } else {
-    ITEMS = ITEMS.filter(i => i.id !== id);
-  }
+  const j = await panggilAman("hapus", { row: id, namaLama: lama.nama });
+  ITEMS = j.items.map(norm);
+  lastSync = Date.now(); simpanLS("pj-lastsync", lastSync); syncState = "ok";
   simpanItems(); renderStatus(); renderDb(); refreshPaket();
 }
 
@@ -854,8 +866,7 @@ function renderStatus() {
   const s = $("dbStatus"); s.classList.remove("err");
   const n = ITEMS.length + " barang";
   const jam = lastSync ? new Date(lastSync).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(".", ":") : "";
-  if (!CONN.url) s.textContent = n + " · Mode lokal: data hanya ada di HP ini. Sambungkan spreadsheet lewat Pengaturan (ikon gerigi).";
-  else if (syncState === "loading") s.textContent = n + " · Memuat dari spreadsheet…";
+  if (syncState === "loading") s.textContent = n + " · Memuat dari spreadsheet…";
   else if (syncState === "err") { s.classList.add("err"); s.textContent = n + " · Gagal memuat: " + syncErr + (jam ? " Memakai data tersimpan (" + jam + ")." : ""); }
   else s.textContent = n + " · Tersinkron dengan spreadsheet" + (jam ? " pukul " + jam : "") + ".";
 }
@@ -898,7 +909,7 @@ window.addEventListener("hashchange", tampil);
 $("openDb").addEventListener("click", () => { location.hash = location.hash === "#database" ? "" : "#database"; });
 $("backCalc").addEventListener("click", () => { location.hash = ""; });
 $("dbSearch").addEventListener("input", renderDb);
-$("dbRefresh").addEventListener("click", () => { if (!CONN.url) { toast("Spreadsheet belum disambungkan"); return; } sinkron(false); });
+$("dbRefresh").addEventListener("click", () => sinkron(false));
 $("dbAdd").addEventListener("click", () => bukaForm({}));
 
 /* =============== FORM BARANG =============== */
@@ -944,30 +955,21 @@ $("fSave").addEventListener("click", async () => {
 
 /* =============== PENGATURAN =============== */
 function terapkanCfgKeUI() { $("preHint").textContent = `Potongan ${fmtPct(CFG.preorder)}% dari harga jual`; }
-function isiFormSetting(c, conn) {
+function isiFormSetting(c) {
   ["platform", "dinamis", "pph22", "preorder", "affiliasi"].forEach(k => $("s_" + k).value = fmtPct(c[k]));
   $("s_pemrosesan").value = fmtNum(c.pemrosesan);
-  if (conn) { $("s_url").value = conn.url || ""; $("s_kunci").value = conn.kunci || ""; }
-  $("setErr").textContent = ""; $("connStatus").textContent = ""; $("connStatus").className = "conn";
+  $("setErr").textContent = "";
 }
-function bukaSetting() { isiFormSetting(CFG, CONN); $("overlay").classList.add("show"); }
+function bukaSetting() { isiFormSetting(CFG); $("overlay").classList.add("show"); }
 function tutupSetting() { $("overlay").classList.remove("show"); }
 $("openSet").addEventListener("click", bukaSetting);
 $("setCancel").addEventListener("click", tutupSetting);
 $("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) tutupSetting(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { tutupSetting(); tutupForm(); } });
-$("setDefault").addEventListener("click", () => isiFormSetting(STANDAR, null));
+$("setDefault").addEventListener("click", () => isiFormSetting(STANDAR));
 $("s_pemrosesan").addEventListener("input", (e) => {
   const dg = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
   e.target.value = dg ? parseInt(dg, 10).toLocaleString("id-ID") : "";
-});
-$("testConn").addEventListener("click", async () => {
-  const conn = { url: $("s_url").value.trim(), kunci: $("s_kunci").value.trim() };
-  const st = $("connStatus");
-  if (!conn.url) { st.className = "conn bad"; st.textContent = "Isi URL Apps Script dulu."; return; }
-  st.className = "conn"; st.textContent = "Menghubungi…";
-  try { const j = await panggil(conn, "list"); st.className = "conn ok"; st.textContent = "Terhubung. Ada " + (j.items || []).length + " barang di spreadsheet."; }
-  catch (e) { st.className = "conn bad"; st.textContent = e.message; }
 });
 $("setSave").addEventListener("click", () => {
   const baru = {};
@@ -980,19 +982,51 @@ $("setSave").addEventListener("click", () => {
   baru.pemrosesan = digitsOf("s_pemrosesan");
   const total = baru.platform + baru.dinamis + baru.pph22 + baru.preorder + baru.affiliasi;
   if (total >= 100) { $("setErr").textContent = "Total persentase potongan tidak boleh 100% atau lebih."; return; }
-
-  const url = $("s_url").value.trim(), kunci = $("s_kunci").value.trim();
-  if (url && !/^https:\/\//i.test(url)) { $("setErr").textContent = "URL harus diawali https://"; $("s_url").focus(); return; }
-  const gantiSumber = url && url !== CONN.url;
-  if (gantiSumber && ITEMS.length && !CONN.url && !confirm("Barang yang tersimpan di HP ini akan diganti dengan data dari spreadsheet. Lanjutkan?")) return;
-
   const affLama = CFG.affiliasi;
   CFG = baru; simpanLS("pj-tarif", CFG);
-  CONN = { url, kunci }; simpanLS("pj-conn", CONN);
   if (affRate() * 100 === affLama || !$("affPct").value) $("affPct").value = fmtPct(CFG.affiliasi);
-  terapkanCfgKeUI(); tutupSetting(); render(); renderStatus();
+  terapkanCfgKeUI(); tutupSetting(); render();
   toast("Pengaturan tersimpan");
-  if (CONN.url) sinkron(false);
+});
+
+/* =============== KUNCI APLIKASI =============== */
+function tampilKunci(pesan) {
+  document.body.classList.add("locked");
+  $("lockScreen").hidden = false;
+  $("lockErr").textContent = pesan || "";
+  $("lockInput").value = "";
+  $("lockBtn").disabled = !CONN.url;
+  setTimeout(() => $("lockInput").focus(), 60);
+}
+function bukaKunci() { document.body.classList.remove("locked"); $("lockScreen").hidden = true; }
+
+// Kunci aplikasi di perangkat ini: hapus kunci dan data barang yang tersimpan.
+function kunciPerangkat(pesan) {
+  CONN.kunci = "";
+  try { localStorage.removeItem("pj-kunci"); } catch (e) {}
+  ITEMS = []; simpanItems(); lastSync = null; simpanLS("pj-lastsync", null); syncState = "";
+  PAKET = [newRow()];
+  tutupForm(); tutupSetting();
+  if (location.hash) location.hash = "";
+  renderPaket(); renderDb(); renderStatus();
+  tampilKunci(pesan);
+}
+$("openLock").addEventListener("click", () => kunciPerangkat(""));
+
+$("lockForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const k = $("lockInput").value.trim();
+  if (!k) { $("lockErr").textContent = "Masukkan kunci dulu."; return; }
+  const btn = $("lockBtn"); btn.disabled = true; btn.textContent = "Memeriksa…"; $("lockErr").textContent = "";
+  try {
+    const j = await panggil({ url: CONN.url, kunci: k }, "list");
+    CONN.kunci = k; simpanLS("pj-kunci", k);
+    ITEMS = (j.items || []).map(norm); simpanItems();
+    lastSync = Date.now(); simpanLS("pj-lastsync", lastSync); syncState = "ok"; syncTs = Date.now();
+    bukaKunci(); renderStatus(); renderDb(); renderPaket();
+  } catch (err) {
+    $("lockErr").textContent = err.message; $("lockInput").value = ""; $("lockInput").focus();
+  } finally { btn.disabled = !CONN.url; btn.textContent = "Buka"; }
 });
 
 /* =============== PASANG SEBAGAI APLIKASI =============== */
@@ -1022,7 +1056,7 @@ if (isIOS && !standalone) showInstall("Untuk memasang di iPhone: ketuk tombol Ba
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && CONN.url && Date.now() - syncTs > 60000) sinkron(true);
+  if (document.visibilityState === "visible" && CONN.url && CONN.kunci && Date.now() - syncTs > 60000) sinkron(true);
 });
 
 /* =============== MULAI =============== */
@@ -1031,7 +1065,9 @@ terapkanCfgKeUI();
 renderPaket();
 renderStatus();
 tampil();
-if (CONN.url) sinkron(true);
+if (!CONN.url) tampilKunci("URL Apps Script belum diisi. Buka index.html lalu isi SCRIPT_URL di bagian atas script.");
+else if (!CONN.kunci) tampilKunci("");
+else { bukaKunci(); sinkron(true); }
 </script>
 </body>
 </html>
