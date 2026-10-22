@@ -319,6 +319,10 @@
           <div class="money"><span>Rp</span><input class="input" id="ops" inputmode="numeric" placeholder="0" autocomplete="off"></div>
         </div>
       </div>
+      <div class="field">
+        <label class="lbl" for="inv">Komisi investor</label>
+        <div class="money"><span>Rp</span><input class="input" id="inv" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+      </div>
 
       <div class="receipt" id="receipt"></div>
 
@@ -441,6 +445,10 @@ function toast(msg) {
 }
 
 /* =============== TARIF TIKTOK =============== */
+// Nilai awal potongan pribadi (terisi otomatis, tetap bisa diubah per produk)
+const AWAL_PRIBADI = { bll: 2320, ops: 4000, inv: 1000 };
+function isiPribadiAwal() { for (const k in AWAL_PRIBADI) $(k).value = fmtNum(AWAL_PRIBADI[k]); }
+
 const STANDAR = { platform: 10, dinamis: 6.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 };
 let CFG = (function () {
   const out = { ...STANDAR }, s = bacaLS("pj-tarif", null);
@@ -667,7 +675,7 @@ function affRate() {
 }
 
 function hitung() {
-  const harga = num("harga"), modal = num("modal"), bll = num("bll"), ops = num("ops");
+  const harga = num("harga"), modal = num("modal"), bll = num("bll"), ops = num("ops"), inv = num("inv");
   const pre = $("pre").checked, aff = $("aff").checked;
   const ar = aff ? affRate() : 0;
   const pf = CFG.platform / 100, dn = CFG.dinamis / 100, pph = CFG.pph22 / 100, po = CFG.preorder / 100, proses = CFG.pemrosesan;
@@ -682,13 +690,13 @@ function hitung() {
 
   const totalTikTok = potTikTok.reduce((s, x) => s + x.amt, 0);
   const cair = harga - totalTikTok;
-  const totalPribadi = bll + ops;
+  const totalPribadi = bll + ops + inv;
   const untung = cair - modal - totalPribadi;
   const margin = harga > 0 ? (untung / harga) * 100 : 0;
   const totalRate = potTikTok.reduce((s, x) => s + (x.rate || 0), 0);
   const tetap = Math.round(proses) + modal + totalPribadi;
   const minJual = totalRate < 1 ? Math.ceil(tetap / (1 - totalRate)) : null;
-  return { harga, modal, bll, ops, potTikTok, totalTikTok, cair, totalPribadi, untung, margin, minJual };
+  return { harga, modal, bll, ops, inv, potTikTok, totalTikTok, cair, totalPribadi, untung, margin, minJual };
 }
 
 function render() {
@@ -711,6 +719,7 @@ function render() {
   h += `<div class="sec">POTONGAN PRIBADI</div>`;
   h += `<div class="r neg"><span>Biaya BLL</span><span class="v">${rpNeg(d.bll)}</span></div>`;
   h += `<div class="r neg"><span>Biaya operasional</span><span class="v">${rpNeg(d.ops)}</span></div>`;
+  h += `<div class="r neg"><span>Komisi investor</span><span class="v">${rpNeg(d.inv)}</span></div>`;
   h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan pribadi</span><span class="v">${rpNeg(d.totalPribadi)}</span></div>`;
   h += `<div class="r neg"><span>Modal barang</span><span class="v">${rpNeg(d.modal)}</span></div>`;
   h += `<div class="final"><div class="l"><b>${loss ? "Rugi bersih" : "Untung bersih"}</b><small>Cair − modal − potongan pribadi</small></div>
@@ -722,7 +731,7 @@ function render() {
 }
 
 /* ---- Input uang ---- */
-["modal", "harga", "bll", "ops"].forEach(id => {
+["modal", "harga", "bll", "ops", "inv"].forEach(id => {
   $(id).addEventListener("input", (e) => {
     const digits = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
     e.target.value = digits ? parseInt(digits, 10).toLocaleString("id-ID") : "";
@@ -739,7 +748,8 @@ $("aff").addEventListener("change", () => {
 });
 
 $("reset").addEventListener("click", () => {
-  ["nama", "modal", "harga", "bll", "ops"].forEach(id => $(id).value = "");
+  ["nama", "modal", "harga"].forEach(id => $(id).value = "");
+  isiPribadiAwal();
   $("pre").checked = false; $("aff").checked = false; $("affPct").value = fmtPct(CFG.affiliasi);
   $("tgPre").classList.remove("on"); $("tgAff").classList.remove("on"); $("affBox").classList.remove("show");
   PAKET = [newRow()]; modalAuto = false;
@@ -768,6 +778,7 @@ function buatGambar(d, nama, paket) {
   rows.push({ t: "sec", l: "POTONGAN PRIBADI" });
   rows.push({ t: "row", l: "Biaya BLL", r: rpNeg(d.bll), neg: true });
   rows.push({ t: "row", l: "Biaya operasional", r: rpNeg(d.ops), neg: true });
+  rows.push({ t: "row", l: "Komisi investor", r: rpNeg(d.inv), neg: true });
   rows.push({ t: "row", l: "Total potongan pribadi", r: rpNeg(d.totalPribadi), neg: true, bold: true });
   rows.push({ t: "row", l: "Modal barang", r: rpNeg(d.modal), neg: true });
 
@@ -1065,6 +1076,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 /* =============== MULAI =============== */
+isiPribadiAwal();
 $("affPct").value = fmtPct(CFG.affiliasi);
 terapkanCfgKeUI();
 renderPaket();
