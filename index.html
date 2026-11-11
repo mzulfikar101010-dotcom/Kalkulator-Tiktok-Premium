@@ -413,6 +413,8 @@
         <div class="unit"><input class="input" id="s_platform" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
       <div class="field"><label class="lbl" for="s_dinamis" id="lblDinamis">Komisi dinamis</label>
         <div class="unit"><input class="input" id="s_dinamis" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+      <div class="field" data-only="tiktok"><label class="lbl" for="s_boost">XTRA Boost</label>
+        <div class="unit"><input class="input" id="s_boost" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
     </div>
     <div class="row2">
       <div class="field"><label class="lbl" for="s_pph22">PPh Pasal 22</label>
@@ -479,7 +481,7 @@ function isiPribadiAwal() { for (const k in AWAL_PRIBADI) $(k).value = fmtNum(AW
 
 const PF = {
   tiktok: { nama: "TikTok", sub: "TikTok Shop", ls: "pj-tarif",
-            std: { platform: 10, dinamis: 6.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 } },
+            std: { platform: 10, dinamis: 6.5, boost: 3.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 } },
   shopee: { nama: "Shopee", sub: "Shopee", ls: "pj-tarif-shopee",
             std: { platform: 10, xtra: 6, promo: 0, pph22: 0.5, pemrosesan: 1250, affiliasi: 1 } }
 };
@@ -737,6 +739,8 @@ function hitung() {
   if (PLAT === "tiktok") {
     const dn = c.dinamis / 100;
     if (dn > 0) potPlat.push({ label: `Komisi dinamis (${pctText(dn)}%)`, amt: Math.round(harga * dn), rate: dn });
+    const bo = c.boost / 100;
+    if (bo > 0) potPlat.push({ label: `XTRA Boost (${pctText(bo)}%)`, amt: Math.round(harga * bo), rate: bo });
   } else {
     const xt = c.xtra / 100;
     if (xt > 0) potPlat.push({ label: `Biaya Gratis Ongkir XTRA (${pctText(xt)}%)`, amt: Math.round(harga * xt), rate: xt });
@@ -1098,7 +1102,7 @@ $("openPlat").addEventListener("click", () => {
 });
 
 /* =============== PENGATURAN =============== */
-const kunciSet = () => PLAT === "tiktok" ? ["platform", "dinamis", "pph22", "preorder", "affiliasi"] : ["platform", "xtra", "promo", "pph22", "affiliasi"];
+const kunciSet = () => PLAT === "tiktok" ? ["platform", "dinamis", "boost", "pph22", "preorder", "affiliasi"] : ["platform", "xtra", "promo", "pph22", "affiliasi"];
 const sid = (k) => "s_" + (k === "xtra" ? "dinamis" : k);
 function isiFormSetting(c) {
   kunciSet().forEach(k => $(sid(k)).value = fmtPct(c[k]));
