@@ -22,6 +22,7 @@
     --red: #c4372b;
     --green: #2a8a4a;
     --teal: #1f5f4f;
+    --ring: rgba(37,244,238,.35);
     --cyan: #25f4ee;
     --pink: #fe2c55;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -46,12 +47,29 @@
     margin: 0 auto;
   }
   header h1 {
-    margin: 0; padding-right: 160px;
+    margin: 0;
     font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;
     text-shadow: -2px -1px 0 var(--cyan), 2px 1px 0 var(--pink);
   }
   header p { margin: 8px 0 0; color: #b9b9c4; font-size: 14px; padding-right: 20px; }
-  .hbtns { position: absolute; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 20px); display: flex; gap: 8px; }
+  body[data-platform="shopee"] { --cyan: #ff9a6c; --pink: #ee4d2d; --ring: rgba(238,77,45,.3); background: #ee4d2d; }
+  body[data-platform="shopee"] header h1 { text-shadow: none; }
+  body[data-platform="shopee"] header p { color: rgba(255,255,255,.92); }
+  body[data-platform="shopee"] .hbtn, body[data-platform="shopee"] .plat { border-color: rgba(255,255,255,.55); }
+  body[data-platform="shopee"] .hbtn:active, body[data-platform="shopee"] .plat:active { background: rgba(255,255,255,.2); }
+  body[data-platform="shopee"] .hbtn.on { border-color: #fff; background: rgba(255,255,255,.2); }
+  .hbtns { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 18px; }
+  .hbtns .grp { display: flex; gap: 8px; }
+  .plat { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 10px; border-radius: 14px; border: 1.5px solid #3a3a46; background: transparent; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .plat:active { background: #24242c; }
+  .plat svg { width: 26px; height: 26px; flex: none; }
+  .crow { background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 10px; }
+  .ctop { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ctop .input { flex: 1; min-width: 0; padding: 11px 12px; font-size: 16px; }
+  .cbot { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+  .cbot .input { padding: 11px 12px; font-size: 16px; }
+  .cbot select.input { font-size: 15px; }
+  .pct .input { padding-right: 34px; }
   .hbtn {
     width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid #3a3a46;
     background: transparent; color: #fff; cursor: pointer; display: grid; place-items: center;
@@ -76,7 +94,7 @@
     border-radius: 12px; color: var(--ink); outline: none;
     transition: border-color .15s, box-shadow .15s;
   }
-  .input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(37,244,238,.35); }
+  .input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ring); }
   .input[readonly] { background: var(--paper-2); }
   .money { position: relative; }
   .money span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--muted); font-weight: 600; pointer-events: none; }
@@ -243,6 +261,8 @@
 
 <header>
   <div class="hbtns">
+    <button class="plat" id="openPlat" type="button"></button>
+    <div class="grp">
     <button class="hbtn" id="openDb" type="button" aria-label="Database barang">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/><path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
     </button>
@@ -252,9 +272,10 @@
     <button class="hbtn" id="openSet" type="button" aria-label="Pengaturan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01A1.7 1.7 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1z"/></svg>
     </button>
+    </div>
   </div>
   <h1>Kalkulator Paket Jajan</h1>
-  <p>Hitung modal dari isi paket dan untung bersih jualan di TikTok Shop.</p>
+  <p id="subHead"></p>
 </header>
 
 <main>
@@ -290,9 +311,9 @@
         </div>
       </div>
 
-      <div class="group-title">Potongan TikTok (opsional)</div>
+      <div class="group-title" id="grpPlat">Potongan TikTok (opsional)</div>
 
-      <label class="toggle" id="tgPre">
+      <label class="toggle" id="tgPre" data-only="tiktok">
         <input type="checkbox" id="pre">
         <span class="t">Pre order<small id="preHint"></small></span>
       </label>
@@ -310,7 +331,7 @@
 
       <div class="group-title">Potongan pribadi</div>
       <div class="row2">
-        <div class="field">
+        <div class="field" data-only="tiktok">
           <label class="lbl" for="bll">Biaya BLL</label>
           <div class="money"><span>Rp</span><input class="input" id="bll" inputmode="numeric" placeholder="0" autocomplete="off"></div>
         </div>
@@ -318,11 +339,16 @@
           <label class="lbl" for="ops">Biaya operasional</label>
           <div class="money"><span>Rp</span><input class="input" id="ops" inputmode="numeric" placeholder="0" autocomplete="off"></div>
         </div>
+        <div class="field">
+          <label class="lbl" for="inv">Komisi investor</label>
+          <div class="money"><span>Rp</span><input class="input" id="inv" inputmode="numeric" placeholder="0" autocomplete="off"></div>
+        </div>
       </div>
-      <div class="field">
-        <label class="lbl" for="inv">Komisi investor</label>
-        <div class="money"><span>Rp</span><input class="input" id="inv" inputmode="numeric" placeholder="0" autocomplete="off"></div>
-      </div>
+
+      <div class="group-title">Biaya tambahan (persen)</div>
+      <div id="customList"></div>
+      <button class="mini" id="addCustom" type="button">+ Tambah biaya persen</button>
+      <div class="hint">Dipotong dari harga jual. Untuk tiap biaya, pilih masuk ke potongan platform atau potongan pribadi. Tersimpan di HP.</div>
 
       <div class="receipt" id="receipt"></div>
 
@@ -380,18 +406,20 @@
 <div class="overlay" id="overlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <h2 id="setTitle">Pengaturan</h2>
-    <p class="sub">Sesuaikan tarif kalau TikTok mengubah potongan. Isi 0 untuk menyembunyikan potongan dari perhitungan.</p>
+    <p class="sub" id="setSub"></p>
 
     <div class="row2">
       <div class="field"><label class="lbl" for="s_platform">Komisi platform</label>
         <div class="unit"><input class="input" id="s_platform" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
-      <div class="field"><label class="lbl" for="s_dinamis">Komisi dinamis</label>
+      <div class="field"><label class="lbl" for="s_dinamis" id="lblDinamis">Komisi dinamis</label>
         <div class="unit"><input class="input" id="s_dinamis" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
     </div>
     <div class="row2">
       <div class="field"><label class="lbl" for="s_pph22">PPh Pasal 22</label>
         <div class="unit"><input class="input" id="s_pph22" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
-      <div class="field"><label class="lbl" for="s_preorder">Potongan pre order</label>
+      <div class="field" data-only="shopee"><label class="lbl" for="s_promo">Promo Xtra</label>
+        <div class="unit"><input class="input" id="s_promo" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+      <div class="field" data-only="tiktok"><label class="lbl" for="s_preorder">Potongan pre order</label>
         <div class="unit"><input class="input" id="s_preorder" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
     </div>
     <div class="row2">
@@ -449,12 +477,29 @@ function toast(msg) {
 const AWAL_PRIBADI = { bll: 2320, ops: 4000, inv: 1000 };
 function isiPribadiAwal() { for (const k in AWAL_PRIBADI) $(k).value = fmtNum(AWAL_PRIBADI[k]); }
 
-const STANDAR = { platform: 10, dinamis: 6.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 };
-let CFG = (function () {
-  const out = { ...STANDAR }, s = bacaLS("pj-tarif", null);
-  if (s && typeof s === "object") for (const k in STANDAR) if (typeof s[k] === "number" && isFinite(s[k]) && s[k] >= 0) out[k] = s[k];
+const PF = {
+  tiktok: { nama: "TikTok", sub: "TikTok Shop", ls: "pj-tarif",
+            std: { platform: 10, dinamis: 6.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 } },
+  shopee: { nama: "Shopee", sub: "Shopee", ls: "pj-tarif-shopee",
+            std: { platform: 10, xtra: 6, promo: 0, pph22: 0.5, pemrosesan: 1250, affiliasi: 1 } }
+};
+function muatCfg(pl) {
+  const out = { ...PF[pl].std }, v = bacaLS(PF[pl].ls, null);
+  if (v && typeof v === "object") for (const k in out) if (typeof v[k] === "number" && isFinite(v[k]) && v[k] >= 0) out[k] = v[k];
   return out;
-})();
+}
+const CFGS = { tiktok: muatCfg("tiktok"), shopee: muatCfg("shopee") };
+let PLAT = bacaLS("pj-platform", "tiktok");
+if (!PF[PLAT]) PLAT = "tiktok";
+const cfg = () => CFGS[PLAT];
+
+// Biaya tambahan dalam persen, disimpan terpisah untuk tiap platform
+let CUSTOM = bacaLS("pj-custom", null);
+if (!CUSTOM || typeof CUSTOM !== "object") CUSTOM = {};
+["tiktok", "shopee"].forEach(k => { if (!Array.isArray(CUSTOM[k])) CUSTOM[k] = []; });
+const customList = () => CUSTOM[PLAT];
+function simpanCustom() { simpanLS("pj-custom", CUSTOM); }
+const esc = (t) => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* =============== DATABASE BARANG =============== */
 /* ====== ISI SEKALI SAJA sebelum upload: URL aplikasi web Apps Script (berakhiran /exec) ====== */
@@ -669,34 +714,59 @@ $("addItem").addEventListener("click", () => {
 $("newItem").addEventListener("click", () => bukaForm({ onSaved: (it) => tambahKePaket(it) }));
 
 /* =============== HITUNG & STRUK =============== */
-function affRate() {
-  const v = parseFloat(($("affPct").value || "").replace(",", "."));
+function pctInput(id) {
+  const v = parseFloat(($(id).value || "").replace(",", "."));
   return isFinite(v) && v > 0 ? Math.min(v, 100) / 100 : 0;
 }
+function affRate() { return pctInput("affPct"); }
 
 function hitung() {
-  const harga = num("harga"), modal = num("modal"), bll = num("bll"), ops = num("ops"), inv = num("inv");
-  const pre = $("pre").checked, aff = $("aff").checked;
-  const ar = aff ? affRate() : 0;
-  const pf = CFG.platform / 100, dn = CFG.dinamis / 100, pph = CFG.pph22 / 100, po = CFG.preorder / 100, proses = CFG.pemrosesan;
+  const c = cfg();
+  const harga = num("harga"), modal = num("modal");
+  const aff = $("aff").checked, ar = aff ? affRate() : 0;
+  const pf = c.platform / 100, pph = c.pph22 / 100, proses = c.pemrosesan;
 
-  const potTikTok = [];
-  if (pf > 0) potTikTok.push({ label: `Komisi platform (${pctText(pf)}%)`, amt: Math.round(harga * pf), rate: pf });
-  if (dn > 0) potTikTok.push({ label: `Komisi dinamis (${pctText(dn)}%)`, amt: Math.round(harga * dn), rate: dn });
-  if (aff && ar > 0) potTikTok.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
-  if (proses > 0) potTikTok.push({ label: "Biaya pemrosesan", amt: Math.round(proses), fixed: true });
-  if (pph > 0) potTikTok.push({ label: `PPh Pasal 22 (${pctText(pph)}%)`, amt: Math.round(harga * pph), rate: pph });
-  if (pre && po > 0) potTikTok.push({ label: `Potongan pre order (${pctText(po)}%)`, amt: Math.round(harga * po), rate: po });
+  const cust = customList().map(x => ({
+    nama: (x.nama || "").trim() || "Biaya tambahan",
+    rate: Math.min(Math.max(parseFloat(String(x.pct).replace(",", ".")) || 0, 0), 100) / 100,
+    tipe: x.tipe
+  })).filter(x => x.rate > 0);
 
-  const totalTikTok = potTikTok.reduce((s, x) => s + x.amt, 0);
-  const cair = harga - totalTikTok;
-  const totalPribadi = bll + ops + inv;
+  const potPlat = [];
+  if (pf > 0) potPlat.push({ label: `Komisi platform (${pctText(pf)}%)`, amt: Math.round(harga * pf), rate: pf });
+  if (PLAT === "tiktok") {
+    const dn = c.dinamis / 100;
+    if (dn > 0) potPlat.push({ label: `Komisi dinamis (${pctText(dn)}%)`, amt: Math.round(harga * dn), rate: dn });
+  } else {
+    const xt = c.xtra / 100;
+    if (xt > 0) potPlat.push({ label: `Biaya Gratis Ongkir XTRA (${pctText(xt)}%)`, amt: Math.round(harga * xt), rate: xt });
+    const pm = c.promo / 100;
+    if (pm > 0) potPlat.push({ label: `Promo Xtra (${pctText(pm)}%)`, amt: Math.round(harga * pm), rate: pm });
+  }
+  if (aff && ar > 0) potPlat.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
+  if (proses > 0) potPlat.push({ label: "Biaya pemrosesan", amt: Math.round(proses), fixed: true });
+  if (pph > 0) potPlat.push({ label: `PPh Pasal 22 (${pctText(pph)}%)`, amt: Math.round(harga * pph), rate: pph });
+  if (PLAT === "tiktok" && $("pre").checked && c.preorder > 0) {
+    const po = c.preorder / 100;
+    potPlat.push({ label: `Potongan pre order (${pctText(po)}%)`, amt: Math.round(harga * po), rate: po });
+  }
+  cust.filter(x => x.tipe !== "pribadi").forEach(x => potPlat.push({ label: `${x.nama} (${fmtPct(x.rate * 100)}%)`, amt: Math.round(harga * x.rate), rate: x.rate }));
+
+  const pribadi = [];
+  if (PLAT === "tiktok") pribadi.push({ label: "Biaya BLL", amt: num("bll"), fixed: true });
+  pribadi.push({ label: "Biaya operasional", amt: num("ops"), fixed: true });
+  pribadi.push({ label: "Komisi investor", amt: num("inv"), fixed: true });
+  cust.filter(x => x.tipe === "pribadi").forEach(x => pribadi.push({ label: `${x.nama} (${fmtPct(x.rate * 100)}%)`, amt: Math.round(harga * x.rate), rate: x.rate }));
+
+  const totalPlat = potPlat.reduce((s, x) => s + x.amt, 0);
+  const cair = harga - totalPlat;
+  const totalPribadi = pribadi.reduce((s, x) => s + x.amt, 0);
   const untung = cair - modal - totalPribadi;
   const margin = harga > 0 ? (untung / harga) * 100 : 0;
-  const totalRate = potTikTok.reduce((s, x) => s + (x.rate || 0), 0);
-  const tetap = Math.round(proses) + modal + totalPribadi;
+  const totalRate = potPlat.reduce((s, x) => s + (x.rate || 0), 0) + pribadi.reduce((s, x) => s + (x.rate || 0), 0);
+  const tetap = Math.round(proses) + modal + pribadi.filter(x => x.fixed).reduce((s, x) => s + x.amt, 0);
   const minJual = totalRate < 1 ? Math.ceil(tetap / (1 - totalRate)) : null;
-  return { harga, modal, bll, ops, inv, potTikTok, totalTikTok, cair, totalPribadi, untung, margin, minJual };
+  return { harga, modal, potPlat, totalPlat, cair, pribadi, totalPribadi, untung, margin, minJual };
 }
 
 function render() {
@@ -712,14 +782,12 @@ function render() {
   let h = "";
   if (nama) h += `<div class="name"></div>`;
   h += `<div class="r bold"><span>Harga jual</span><span class="v">${rp(d.harga)}</span></div>`;
-  h += `<div class="sec">POTONGAN TIKTOK</div>`;
-  d.potTikTok.forEach(x => h += `<div class="r neg"><span>${x.label}</span><span class="v">${rpNeg(x.amt)}</span></div>`);
-  h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan TikTok</span><span class="v">${rpNeg(d.totalTikTok)}</span></div>`;
+  h += `<div class="sec">POTONGAN ${PF[PLAT].nama.toUpperCase()}</div>`;
+  d.potPlat.forEach(x => h += `<div class="r neg"><span>${esc(x.label)}</span><span class="v">${rpNeg(x.amt)}</span></div>`);
+  h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan ${PF[PLAT].nama}</span><span class="v">${rpNeg(d.totalPlat)}</span></div>`;
   h += `<div class="r bold band"><span>Cair</span><span class="v" style="color:var(--ink)">${rp(d.cair)}</span></div>`;
   h += `<div class="sec">POTONGAN PRIBADI</div>`;
-  h += `<div class="r neg"><span>Biaya BLL</span><span class="v">${rpNeg(d.bll)}</span></div>`;
-  h += `<div class="r neg"><span>Biaya operasional</span><span class="v">${rpNeg(d.ops)}</span></div>`;
-  h += `<div class="r neg"><span>Komisi investor</span><span class="v">${rpNeg(d.inv)}</span></div>`;
+  d.pribadi.forEach(x => h += `<div class="r neg"><span>${esc(x.label)}</span><span class="v">${rpNeg(x.amt)}</span></div>`);
   h += `<div class="r bold neg"><span style="color:var(--ink)">Total potongan pribadi</span><span class="v">${rpNeg(d.totalPribadi)}</span></div>`;
   h += `<div class="r neg"><span>Modal barang</span><span class="v">${rpNeg(d.modal)}</span></div>`;
   h += `<div class="final"><div class="l"><b>${loss ? "Rugi bersih" : "Untung bersih"}</b><small>Cair − modal − potongan pribadi</small></div>
@@ -750,8 +818,10 @@ $("aff").addEventListener("change", () => {
 $("reset").addEventListener("click", () => {
   ["nama", "modal", "harga"].forEach(id => $(id).value = "");
   isiPribadiAwal();
-  $("pre").checked = false; $("aff").checked = false; $("affPct").value = fmtPct(CFG.affiliasi);
-  $("tgPre").classList.remove("on"); $("tgAff").classList.remove("on"); $("affBox").classList.remove("show");
+  $("pre").checked = false; $("aff").checked = false;
+  $("affPct").value = fmtPct(cfg().affiliasi);
+  ["tgPre", "tgAff"].forEach(i => $(i).classList.remove("on"));
+  $("affBox").classList.remove("show");
   PAKET = [newRow()]; modalAuto = false;
   renderPaket();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -771,14 +841,12 @@ function buatGambar(d, nama, paket) {
     paket.forEach(x => rows.push({ t: "row", l: x.nama, r: rp(x.biji) + " / biji", teal: true }));
   }
   rows.push({ t: "row", l: "Harga jual", r: rp(d.harga), bold: true });
-  rows.push({ t: "sec", l: "POTONGAN TIKTOK" });
-  d.potTikTok.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
-  rows.push({ t: "row", l: "Total potongan TikTok", r: rpNeg(d.totalTikTok), neg: true, bold: true });
+  rows.push({ t: "sec", l: "POTONGAN " + PF[PLAT].nama.toUpperCase() });
+  d.potPlat.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
+  rows.push({ t: "row", l: "Total potongan " + PF[PLAT].nama, r: rpNeg(d.totalPlat), neg: true, bold: true });
   rows.push({ t: "row", l: "Cair", r: rp(d.cair), bold: true, band: true });
   rows.push({ t: "sec", l: "POTONGAN PRIBADI" });
-  rows.push({ t: "row", l: "Biaya BLL", r: rpNeg(d.bll), neg: true });
-  rows.push({ t: "row", l: "Biaya operasional", r: rpNeg(d.ops), neg: true });
-  rows.push({ t: "row", l: "Komisi investor", r: rpNeg(d.inv), neg: true });
+  d.pribadi.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
   rows.push({ t: "row", l: "Total potongan pribadi", r: rpNeg(d.totalPribadi), neg: true, bold: true });
   rows.push({ t: "row", l: "Modal barang", r: rpNeg(d.modal), neg: true });
 
@@ -808,7 +876,7 @@ function buatGambar(d, nama, paket) {
   g.fillText(fit(nama || "Kalkulator Paket Jajan", `800 30px ${FONT}`, W - P * 2), P, 54);
   g.font = `400 15px ${FONT}`; g.fillStyle = C.muted;
   const tgl = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-  g.fillText(`Kalkulator Paket Jajan · ${tgl}`, P, 80);
+  g.fillText(`Kalkulator Paket Jajan · ${PF[PLAT].nama} · ${tgl}`, P, 80);
 
   let y = HEAD;
   dash(y);
@@ -970,37 +1038,103 @@ $("fSave").addEventListener("click", async () => {
 });
 
 /* =============== PENGATURAN =============== */
-function terapkanCfgKeUI() { $("preHint").textContent = `Potongan ${fmtPct(CFG.preorder)}% dari harga jual`; }
+/* ---- Biaya tambahan (persen) ---- */
+function renderCustom() {
+  const box = $("customList"); box.innerHTML = "";
+  customList().forEach((x, i) => {
+    const row = mk("div", "crow"), top = mk("div", "ctop"), bot = mk("div", "cbot");
+    const nm = mk("input", "input"); nm.type = "text"; nm.placeholder = "Nama biaya"; nm.value = x.nama || ""; nm.autocomplete = "off";
+    const del = mk("button", "xbtn", "×"); del.type = "button"; del.setAttribute("aria-label", "Hapus biaya");
+    top.append(nm, del);
+    const pw = mk("div", "pct"), pi = mk("input", "input");
+    pi.type = "text"; pi.setAttribute("inputmode", "decimal"); pi.placeholder = "0"; pi.value = x.pct || ""; pi.autocomplete = "off";
+    pw.append(pi, mk("span", "", "%"));
+    const sel = mk("select", "input");
+    [["platform", "Potongan " + PF[PLAT].nama], ["pribadi", "Potongan pribadi"]].forEach(([v, t]) => { const o = mk("option", "", t); o.value = v; sel.append(o); });
+    sel.value = x.tipe === "pribadi" ? "pribadi" : "platform";
+    bot.append(pw, sel); row.append(top, bot); box.append(row);
+    nm.addEventListener("input", () => { x.nama = nm.value; simpanCustom(); render(); });
+    pi.addEventListener("input", () => {
+      const v = pi.value.replace(/[^0-9.,]/g, ""); if (v !== pi.value) pi.value = v;
+      x.pct = v; simpanCustom(); render();
+    });
+    sel.addEventListener("change", () => { x.tipe = sel.value; simpanCustom(); render(); });
+    del.addEventListener("click", () => { customList().splice(i, 1); simpanCustom(); renderCustom(); render(); });
+  });
+}
+$("addCustom").addEventListener("click", () => {
+  customList().push({ nama: "", pct: "", tipe: "platform" });
+  simpanCustom(); renderCustom();
+  const last = $("customList").lastChild; if (last) { const f = last.querySelector("input"); if (f) f.focus(); }
+  render();
+});
+
+/* ---- Ganti kalkulator TikTok / Shopee ---- */
+const LOGO = {
+  shopee: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 8h15.2l-1 12.1a1.7 1.7 0 0 1-1.7 1.5H7.1a1.7 1.7 0 0 1-1.7-1.5z" fill="#ee4d2d"/><path d="M8.4 8V6.7a3.6 3.6 0 0 1 7.2 0V8" fill="none" stroke="#ee4d2d" stroke-width="1.8" stroke-linecap="round"/><text x="12" y="18.2" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" font-family="Arial, Helvetica, sans-serif">S</text></svg>',
+  tiktok: '<svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><g transform="translate(-.9 -.6)" stroke="#25f4ee" fill="#25f4ee"><circle cx="9.5" cy="17" r="3.2" stroke="none"/><path d="M12.7 17V4"/><path d="M12.7 4c.4 2.6 2.2 4.4 5 4.8"/></g><g transform="translate(.9 .6)" stroke="#fe2c55" fill="#fe2c55"><circle cx="9.5" cy="17" r="3.2" stroke="none"/><path d="M12.7 17V4"/><path d="M12.7 4c.4 2.6 2.2 4.4 5 4.8"/></g><g stroke="#fff" fill="#fff"><circle cx="9.5" cy="17" r="3.2" stroke="none"/><path d="M12.7 17V4"/><path d="M12.7 4c.4 2.6 2.2 4.4 5 4.8"/></g></svg>'
+};
+function terapkanCfgKeUI() {
+  if (PLAT === "tiktok") $("preHint").textContent = `Potongan ${fmtPct(cfg().preorder)}% dari harga jual`;
+}
+function applyPlatform() {
+  document.body.dataset.platform = PLAT;
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute("content", PLAT === "shopee" ? "#ee4d2d" : "#121216");
+  const lain = PLAT === "tiktok" ? "shopee" : "tiktok";
+  $("openPlat").innerHTML = LOGO[lain] + "<span>" + PF[lain].nama + "</span>";
+  $("openPlat").setAttribute("aria-label", "Pindah ke kalkulator " + PF[lain].nama);
+  $("subHead").textContent = `Hitung modal dari isi paket dan untung bersih jualan di ${PF[PLAT].sub}.`;
+  $("grpPlat").textContent = `Potongan ${PF[PLAT].nama} (opsional)`;
+  document.querySelectorAll("[data-only]").forEach(el => { el.hidden = el.dataset.only !== PLAT; });
+  if (!$("aff").checked) $("affPct").value = fmtPct(cfg().affiliasi);
+  terapkanCfgKeUI(); renderCustom(); render();
+}
+$("openPlat").addEventListener("click", () => {
+  PLAT = PLAT === "tiktok" ? "shopee" : "tiktok";
+  simpanLS("pj-platform", PLAT);
+  tutupSetting(); applyPlatform();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* =============== PENGATURAN =============== */
+const kunciSet = () => PLAT === "tiktok" ? ["platform", "dinamis", "pph22", "preorder", "affiliasi"] : ["platform", "xtra", "promo", "pph22", "affiliasi"];
+const sid = (k) => "s_" + (k === "xtra" ? "dinamis" : k);
 function isiFormSetting(c) {
-  ["platform", "dinamis", "pph22", "preorder", "affiliasi"].forEach(k => $("s_" + k).value = fmtPct(c[k]));
+  kunciSet().forEach(k => $(sid(k)).value = fmtPct(c[k]));
   $("s_pemrosesan").value = fmtNum(c.pemrosesan);
   $("setErr").textContent = "";
 }
-function bukaSetting() { isiFormSetting(CFG); $("overlay").classList.add("show"); }
+function bukaSetting() {
+  $("setTitle").textContent = "Pengaturan potongan " + PF[PLAT].nama;
+  $("setSub").textContent = `Sesuaikan tarif ${PF[PLAT].nama} kalau ada perubahan. Isi 0 untuk menyembunyikan potongan dari perhitungan.`;
+  $("lblDinamis").textContent = PLAT === "tiktok" ? "Komisi dinamis" : "Biaya Gratis Ongkir XTRA";
+  isiFormSetting(cfg()); $("overlay").classList.add("show");
+}
 function tutupSetting() { $("overlay").classList.remove("show"); }
 $("openSet").addEventListener("click", bukaSetting);
 $("setCancel").addEventListener("click", tutupSetting);
 $("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) tutupSetting(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { tutupSetting(); tutupForm(); } });
-$("setDefault").addEventListener("click", () => isiFormSetting(STANDAR));
+$("setDefault").addEventListener("click", () => isiFormSetting(PF[PLAT].std));
 $("s_pemrosesan").addEventListener("input", (e) => {
   const dg = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
   e.target.value = dg ? parseInt(dg, 10).toLocaleString("id-ID") : "";
 });
 $("setSave").addEventListener("click", () => {
   const baru = {};
-  for (const k of ["platform", "dinamis", "pph22", "preorder", "affiliasi"]) {
-    const raw = $("s_" + k).value.trim().replace(",", ".");
+  for (const k of kunciSet()) {
+    const raw = $(sid(k)).value.trim().replace(",", ".");
     const v = raw === "" ? 0 : Number(raw);
-    if (!isFinite(v) || v < 0 || v > 100) { $("setErr").textContent = "Persentase harus berupa angka antara 0 sampai 100."; $("s_" + k).focus(); return; }
+    if (!isFinite(v) || v < 0 || v > 100) { $("setErr").textContent = "Persentase harus berupa angka antara 0 sampai 100."; $(sid(k)).focus(); return; }
     baru[k] = v;
   }
   baru.pemrosesan = digitsOf("s_pemrosesan");
-  const total = baru.platform + baru.dinamis + baru.pph22 + baru.preorder + baru.affiliasi;
+  const total = kunciSet().reduce((s, k) => s + baru[k], 0);
   if (total >= 100) { $("setErr").textContent = "Total persentase potongan tidak boleh 100% atau lebih."; return; }
-  const affLama = CFG.affiliasi;
-  CFG = baru; simpanLS("pj-tarif", CFG);
-  if (affRate() * 100 === affLama || !$("affPct").value) $("affPct").value = fmtPct(CFG.affiliasi);
+  const affLama = cfg().affiliasi;
+  CFGS[PLAT] = baru; simpanLS(PF[PLAT].ls, baru);
+  if (affRate() * 100 === affLama || !$("affPct").value) $("affPct").value = fmtPct(cfg().affiliasi);
   terapkanCfgKeUI(); tutupSetting(); render();
   toast("Pengaturan tersimpan");
 });
@@ -1077,9 +1211,9 @@ document.addEventListener("visibilitychange", () => {
 
 /* =============== MULAI =============== */
 isiPribadiAwal();
-$("affPct").value = fmtPct(CFG.affiliasi);
-terapkanCfgKeUI();
+$("affPct").value = fmtPct(cfg().affiliasi);
 renderPaket();
+applyPlatform();
 renderStatus();
 tampil();
 if (!CONN.url) tampilKunci("URL Apps Script belum diisi. Buka index.html lalu isi SCRIPT_URL di bagian atas script.");
