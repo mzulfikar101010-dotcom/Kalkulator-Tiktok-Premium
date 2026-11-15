@@ -354,10 +354,9 @@
 
       <div class="actions">
         <button class="btn ghost" id="reset" type="button">Reset</button>
-        <button class="btn" id="save" type="button">Simpan gambar</button>
+        <button class="btn" id="xlsExport" type="button">Ekspor Excel</button>
       </div>
       <div class="actions">
-        <button class="btn ghost" id="xlsExport" type="button" style="flex:1">Ekspor Excel</button>
         <button class="btn ghost" id="xlsImport" type="button" style="flex:1">Impor Excel</button>
         <input type="file" id="xlsFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
       </div>
@@ -839,110 +838,7 @@ $("reset").addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-/* ---- Gambar struk ---- */
-const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
-
-function buatGambar(d, nama, paket) {
-  const W = 680, P = 32, ROW = 46, SCALE = 2;
-  const C = { paper: "#fffdf6", band: "#f3ecd9", line: "#e4dcc3", ink: "#1b1a15", muted: "#7a7561", red: "#c4372b", green: "#2a8a4a", teal: "#1f5f4f" };
-
-  const rows = [];
-  if (paket && paket.length) {
-    rows.push({ t: "sec", l: "ISI PAKET" });
-    paket.forEach(x => rows.push({ t: "row", l: x.nama, r: rp(x.biji) + " / biji", teal: true }));
-  }
-  rows.push({ t: "row", l: "Harga jual", r: rp(d.harga), bold: true });
-  rows.push({ t: "sec", l: "POTONGAN " + PF[PLAT].nama.toUpperCase() });
-  d.potPlat.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
-  rows.push({ t: "row", l: "Total potongan " + PF[PLAT].nama, r: rpNeg(d.totalPlat), neg: true, bold: true });
-  rows.push({ t: "row", l: "Cair", r: rp(d.cair), bold: true, band: true });
-  rows.push({ t: "sec", l: "POTONGAN PRIBADI" });
-  d.pribadi.forEach(x => rows.push({ t: "row", l: x.label, r: rpNeg(x.amt), neg: true }));
-  rows.push({ t: "row", l: "Total potongan pribadi", r: rpNeg(d.totalPribadi), neg: true, bold: true });
-  rows.push({ t: "row", l: "Modal barang", r: rpNeg(d.modal), neg: true });
-
-  const HEAD = 96, SEC = 40, FINAL = 92, FOOT = 64;
-  const bodyH = rows.reduce((s, r) => s + (r.t === "sec" ? SEC : ROW), 0);
-  const H = HEAD + bodyH + FINAL + FOOT + P;
-
-  const cv = document.createElement("canvas");
-  cv.width = W * SCALE; cv.height = H * SCALE;
-  const g = cv.getContext("2d");
-  g.scale(SCALE, SCALE);
-  g.fillStyle = C.paper; g.fillRect(0, 0, W, H);
-
-  const fit = (txt, font, max) => {
-    g.font = font;
-    if (g.measureText(txt).width <= max) return txt;
-    while (txt.length > 1 && g.measureText(txt + "…").width > max) txt = txt.slice(0, -1);
-    return txt + "…";
-  };
-  const dash = (y) => {
-    g.strokeStyle = C.line; g.lineWidth = 1.5; g.setLineDash([4, 4]);
-    g.beginPath(); g.moveTo(P, y); g.lineTo(W - P, y); g.stroke(); g.setLineDash([]);
-  };
-
-  g.textBaseline = "alphabetic"; g.textAlign = "left";
-  g.fillStyle = C.ink;
-  g.fillText(fit(nama || "Kalkulator Paket Jajan", `800 30px ${FONT}`, W - P * 2), P, 54);
-  g.font = `400 15px ${FONT}`; g.fillStyle = C.muted;
-  const tgl = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-  g.fillText(`Kalkulator Paket Jajan · ${PF[PLAT].nama} · ${tgl}`, P, 80);
-
-  let y = HEAD;
-  dash(y);
-  rows.forEach(r => {
-    if (r.t === "sec") {
-      g.font = `600 13px ${MONO}`; g.fillStyle = C.muted; g.textAlign = "right";
-      g.fillText(r.l.split("").join("\u200A"), W - P, y + 26);
-      g.textAlign = "left"; y += SEC; return;
-    }
-    if (r.band) { g.fillStyle = C.band; g.fillRect(P - 12, y, W - P * 2 + 24, ROW); }
-    const base = y + 29;
-    g.fillStyle = C.ink; g.font = `${r.bold ? 700 : 400} 19px ${FONT}`; g.textAlign = "left";
-    g.fillText(fit(r.l, g.font, W - P * 2 - 190), P, base);
-    g.fillStyle = r.neg ? C.red : (r.teal ? C.teal : C.ink); g.font = `${r.bold ? 700 : 500} 19px ${FONT}`; g.textAlign = "right";
-    g.fillText(r.r, W - P, base);
-    g.textAlign = "left"; y += ROW; dash(y);
-  });
-
-  const loss = d.untung < 0;
-  g.fillStyle = C.ink; g.font = `800 24px ${FONT}`;
-  g.fillText(loss ? "Rugi bersih" : "Untung bersih", P, y + 44);
-  g.fillStyle = C.muted; g.font = `400 14px ${FONT}`;
-  g.fillText("Cair − modal − potongan pribadi", P, y + 68);
-  g.fillStyle = loss ? C.red : C.green; g.font = `800 32px ${FONT}`; g.textAlign = "right";
-  g.fillText((loss ? "- " : "") + rp(d.untung), W - P, y + 56);
-  g.textAlign = "left"; y += FINAL;
-
-  const marginTxt = (Math.round(d.margin * 10) / 10).toString().replace(".", ",");
-  g.fillStyle = C.muted; g.font = `400 15px ${FONT}`;
-  let foot = `Margin ${marginTxt}% dari harga jual`;
-  if (d.minJual) foot += ` · Harga jual minimal agar tidak rugi: ${rp(d.minJual)}`;
-  const words = foot.split(" "); let line = "", ly = y + 8;
-  words.forEach(w => {
-    const test = line ? line + " " + w : w;
-    if (g.measureText(test).width > W - P * 2 && line) { g.fillText(line, P, ly); ly += 22; line = w; }
-    else line = test;
-  });
-  g.fillText(line, P, ly);
-  return cv;
-}
-
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-$("save").addEventListener("click", async () => {
-  const d = hitung();
-  const nama = $("nama").value.trim();
-  if (d.harga <= 0) { toast("Isi harga jual dulu"); $("harga").focus(); return; }
-  if (!nama) { toast("Isi nama produk dulu, dipakai untuk nama file"); $("nama").focus(); return; }
-
-  const paket = PAKET.filter(r => r.chosen).map(r => ({ nama: r.nama, biji: Math.round(rowBiji(r)) }));
-  const cv = buatGambar(d, nama, paket);
-  const blob = await new Promise(res => cv.toBlob(res, "image/png"));
-  await kirimBerkas(blob, namaFile(nama, ".png"), nama, "image/png", "Pilih “Simpan Gambar” atau “Simpan ke Berkas”");
-});
 
 const namaFile = (nama, ext) => nama.replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) + ext;
 
