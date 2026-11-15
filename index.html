@@ -356,6 +356,12 @@
         <button class="btn ghost" id="reset" type="button">Reset</button>
         <button class="btn" id="save" type="button">Simpan gambar</button>
       </div>
+      <div class="actions">
+        <button class="btn ghost" id="xlsExport" type="button" style="flex:1">Ekspor Excel</button>
+        <button class="btn ghost" id="xlsImport" type="button" style="flex:1">Impor Excel</button>
+        <input type="file" id="xlsFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+      </div>
+      <div class="hint">Ekspor menyimpan isi paket dan rincian hitungan ke file Excel. Impor membaca file Excel dan mengisi nama produk, isi paket, serta biaya pribadi.</div>
     </section>
 
     <!-- ===== Halaman database ===== -->
@@ -455,6 +461,7 @@
 
 <div class="toast" id="toast" role="status"></div>
 
+<script src="xlsx.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 const rp = (n) => "Rp " + Math.round(Math.abs(n)).toLocaleString("id-ID");
@@ -469,9 +476,9 @@ function simpanLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 function bacaLS(k, def) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; } catch (e) { return def; } }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms) {
   const t = $("toast"); t.textContent = msg; t.classList.add("show");
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms || 2800);
 }
 
 /* =============== TARIF TIKTOK =============== */
@@ -618,6 +625,7 @@ function renderPaket(focusIdx) {
     const inp = mk("input", "input"); inp.type = "text"; inp.placeholder = "Ketik nama barang…"; inp.value = r.nama;
     inp.autocomplete = "off"; inp.setAttribute("autocapitalize", "off"); inp.setAttribute("enterkeyhint", "done");
     const drop = mk("div", "drop");
+    if (!r.chosen && r.nama.trim()) inp.classList.add("bad");
     pin.append(inp, drop);
     const chip = mk("div", "chip"); chip.append(mk("b"), mk("small", "", "per biji"));
     const x = mk("button", "xbtn", "×"); x.type = "button"; x.setAttribute("aria-label", "Hapus barang");
@@ -932,13 +940,17 @@ $("save").addEventListener("click", async () => {
 
   const paket = PAKET.filter(r => r.chosen).map(r => ({ nama: r.nama, biji: Math.round(rowBiji(r)) }));
   const cv = buatGambar(d, nama, paket);
-  const fileName = nama.replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) + ".png";
   const blob = await new Promise(res => cv.toBlob(res, "image/png"));
-  const file = new File([blob], fileName, { type: "image/png" });
+  await kirimBerkas(blob, namaFile(nama, ".png"), nama, "image/png", "Pilih “Simpan Gambar” atau “Simpan ke Berkas”");
+});
 
+const namaFile = (nama, ext) => nama.replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) + ext;
+
+async function kirimBerkas(blob, fileName, judul, tipe, pesanIOS) {
+  const file = new File([blob], fileName, { type: tipe });
   if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: nama }); toast("Pilih “Simpan Gambar” atau “Simpan ke Berkas”"); }
-    catch (e) { if (e.name !== "AbortError") toast("Gagal menyimpan gambar"); }
+    try { await navigator.share({ files: [file], title: judul }); toast(pesanIOS || "Pilih “Simpan ke Berkas”"); }
+    catch (e) { if (e.name !== "AbortError") toast("Gagal menyimpan berkas"); }
     return;
   }
   const url = URL.createObjectURL(blob);
@@ -947,6 +959,128 @@ $("save").addEventListener("click", async () => {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
   toast("Tersimpan: " + fileName);
+}
+
+/* =============== EXCEL: EKSPOR & IMPOR =============== */
+const angka = (v) => {
+  if (typeof v === "number") return v;
+  const t = String(v == null ? "" : v).replace(/rp/ig, "").replace(/\s/g, "");
+  if (!t) return 0;
+  const n = Number(t.replace(/\./g, "").replace(",", "."));
+  return isFinite(n) ? n : 0;
+};
+
+$("xlsExport").addEventListener("click", async () => {
+  const nama = $("nama").value.trim();
+  if (!nama) { toast("Isi nama produk dulu, dipakai untuk nama file"); $("nama").focus(); return; }
+  if (typeof MiniXlsx === "undefined") { toast("File xlsx.js belum ikut diupload"); return; }
+  const d = hitung();
+  const items = PAKET.filter(r => r.chosen).map(r => ({ nama: r.nama, biji: Math.round(rowBiji(r)) }));
+  const tgl = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  const NP = PF[PLAT].nama;
+
+  const paket = [
+    [{ v: "Kalkulator Paket Jajan", s: 1 }],
+    ["Tanggal", tgl],
+    ["Nama produk", nama],
+    ["Platform", NP],
+    ["Harga jual", { v: d.harga, s: 2 }]
+  ];
+  if (PLAT === "tiktok") paket.push(["Biaya BLL", { v: num("bll"), s: 2 }]);
+  paket.push(["Biaya operasional", { v: num("ops"), s: 2 }], ["Komisi investor", { v: num("inv"), s: 2 }],
+    [{ v: "Modal barang", s: 1 }, { v: d.modal, s: 3 }], [], [{ v: "Nama barang", s: 4 }, { v: "Harga per biji", s: 4 }]);
+  items.forEach(x => paket.push([x.nama, { v: x.biji, s: 2 }]));
+  const sheets = [{ name: "Paket", cols: [30, 20], rows: paket }];
+
+  if (d.harga > 0) {
+    const R = [[{ v: nama, s: 1 }], [`Kalkulator Paket Jajan · ${NP} · ${tgl}`], [],
+      [{ v: "Harga jual", s: 1 }, { v: d.harga, s: 3 }], [{ v: "POTONGAN " + NP.toUpperCase(), s: 4 }]];
+    d.potPlat.forEach(x => R.push([x.label, { v: -x.amt, s: 2 }]));
+    R.push([{ v: "Total potongan " + NP, s: 1 }, { v: -d.totalPlat, s: 3 }], [{ v: "Cair", s: 1 }, { v: d.cair, s: 3 }], [], [{ v: "POTONGAN PRIBADI", s: 4 }]);
+    d.pribadi.forEach(x => R.push([x.label, { v: -x.amt, s: 2 }]));
+    R.push([{ v: "Total potongan pribadi", s: 1 }, { v: -d.totalPribadi, s: 3 }], ["Modal barang", { v: -d.modal, s: 2 }], [],
+      [{ v: d.untung < 0 ? "Rugi bersih" : "Untung bersih", s: 1 }, { v: d.untung, s: 3 }],
+      ["Margin dari harga jual", { v: Math.round(d.margin * 10) / 10, s: 5 }]);
+    if (d.minJual) R.push(["Harga jual minimal agar tidak rugi", { v: d.minJual, s: 2 }]);
+    sheets.push({ name: "Rincian", cols: [40, 20], rows: R });
+  }
+  const blob = new Blob([MiniXlsx.buat(sheets)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  await kirimBerkas(blob, namaFile(nama, ".xlsx"), nama, blob.type, "Pilih “Simpan ke Berkas”");
+});
+
+function uraiPaket(wb) {
+  const sh = wb.sheets.find(x => x.name.toLowerCase() === "paket") || wb.sheets[0];
+  if (!sh) throw new Error("File Excel kosong.");
+  const nk = (t) => String(t == null ? "" : t).trim().toLowerCase().replace(/\s+/g, " ");
+  const peta = { "nama produk": "nama", "platform": "platform", "harga jual": "harga", "biaya bll": "bll", "biaya operasional": "ops", "komisi investor": "inv", "modal barang": "modal" };
+  const o = { items: [] };
+  let hdr = -1, adaKunci = false;
+  sh.rows.forEach((r, i) => {
+    const k = nk(r[0]);
+    if (hdr < 0 && (k === "nama barang" || k === "isi paket")) hdr = i;
+    else if (hdr < 0 && peta[k]) { o[peta[k]] = r[1]; adaKunci = true; }
+  });
+  if (hdr >= 0) {
+    for (let i = hdr + 1; i < sh.rows.length; i++) {
+      const r = sh.rows[i];
+      if (r[0] == null || String(r[0]).trim() === "") break;
+      o.items.push({ nama: String(r[0]).trim(), biji: angka(r[1]) });
+    }
+  } else if (!adaKunci) {
+    // daftar polos: nama barang di kolom A (harga per biji opsional di kolom B)
+    sh.rows.forEach((r, i) => {
+      if (r[0] == null || String(r[0]).trim() === "") return;
+      const t = nk(r[0]);
+      if (i === 0 && ["nama", "barang", "jajan", "daftar barang"].includes(t)) return;
+      o.items.push({ nama: String(r[0]).trim(), biji: angka(r[1]) });
+    });
+  }
+  if (!adaKunci && !o.items.length) throw new Error("Format file tidak dikenali. Pakai file hasil Ekspor Excel dari aplikasi ini.");
+  return o;
+}
+
+function terapkanImpor(o) {
+  const info = [];
+  const setUang = (id, v) => { if (v == null || v === "") return; $(id).value = fmtNum(Math.round(angka(v))); };
+  if (o.nama) $("nama").value = String(o.nama).trim();
+  setUang("ops", o.ops); setUang("inv", o.inv);
+  if (PLAT === "tiktok") setUang("bll", o.bll);
+
+  const platFile = String(o.platform || "").trim();
+  const sama = !platFile || platFile.toLowerCase() === PF[PLAT].nama.toLowerCase();
+  if (o.harga != null && angka(o.harga) > 0) {
+    if (sama) setUang("harga", o.harga);
+    else info.push(`Harga jual tidak diimpor (file dari ${platFile}), isi harga ${PF[PLAT].nama} sendiri.`);
+  }
+
+  let luarDb = 0; const tidak = [];
+  if (o.items.length) {
+    PAKET = o.items.map(x => {
+      const it = findByName(x.nama);
+      if (it) return { nama: it.nama, chosen: true, snap: bijiOf(it) };
+      if (x.biji > 0) { luarDb++; return { nama: x.nama, chosen: true, snap: x.biji }; }
+      tidak.push(x.nama); return { nama: x.nama, chosen: false, snap: 0 };
+    });
+    renderPaket();
+  } else if (o.modal != null && angka(o.modal) > 0 && !PAKET.some(r => r.chosen)) {
+    setUang("modal", o.modal);
+  }
+  render();
+
+  let msg = o.items.length ? `Diimpor: ${o.items.length} barang.` : "Data diimpor.";
+  if (luarDb) msg += ` ${luarDb} barang belum ada di database, memakai harga dari file.`;
+  if (tidak.length) msg += ` ${tidak.length} barang tidak ditemukan (ditandai merah): ${tidak.slice(0, 3).join(", ")}${tidak.length > 3 ? "…" : ""}.`;
+  if (info.length) msg += " " + info.join(" ");
+  toast(msg, msg.length > 70 ? 7000 : 3500);
+}
+
+$("xlsImport").addEventListener("click", () => $("xlsFile").click());
+$("xlsFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  if (typeof MiniXlsx === "undefined") { toast("File xlsx.js belum ikut diupload"); return; }
+  try { terapkanImpor(uraiPaket(await MiniXlsx.baca(await f.arrayBuffer()))); }
+  catch (err) { toast(err.message || "Gagal membaca file Excel", 5000); }
 });
 
 /* =============== HALAMAN DATABASE =============== */
