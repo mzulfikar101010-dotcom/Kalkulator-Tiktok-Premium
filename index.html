@@ -273,6 +273,14 @@
   .fdrop { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; min-height: 110px; padding: 10px; border: 1.5px dashed #b9b196; border-radius: 12px; background: var(--paper-2); color: var(--muted); font-size: 13.5px; text-align: center; cursor: pointer; }
   .fdrop.over { border-color: var(--ink); background: #fff; }
   .fdrop img { max-width: 100%; max-height: 150px; object-fit: contain; }
+  .live { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; margin: 6px 0 4px; border-radius: 12px; background: var(--paper-2); }
+  .live .l { font-weight: 700; font-size: 14px; }
+  .live .l small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .live .amt { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--green); white-space: nowrap; }
+  .live .amt.loss { color: var(--red); }
+  .live .amt.none { color: var(--muted); font-weight: 600; }
+  .zip-row { align-items: center; margin-top: 10px; }
+  .zip-row span { font-size: 12px; color: var(--muted); line-height: 1.3; }
   .refgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
   .ref { background: #000; border: 2px solid transparent; border-radius: 10px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; font: inherit; color: #fff; min-width: 0; }
   .ref .pic { height: 96px; display: flex; align-items: flex-end; justify-content: center; }
@@ -338,23 +346,7 @@
         </div>
       </div>
 
-      <div class="group-title" id="grpPlat">Potongan TikTok (opsional)</div>
-
-      <label class="toggle" id="tgPre" data-only="tiktok">
-        <input type="checkbox" id="pre">
-        <span class="t">Pre order<small id="preHint"></small></span>
-      </label>
-
-      <label class="toggle" id="tgAff">
-        <input type="checkbox" id="aff">
-        <span class="t">Komisi afiliasi<small>Atur persentasenya sendiri</small></span>
-      </label>
-      <div class="aff-box" id="affBox">
-        <div class="pct">
-          <input class="input" id="affPct" inputmode="decimal" placeholder="Contoh: 1" autocomplete="off">
-          <span>%</span>
-        </div>
-      </div>
+      <div class="live" id="liveUntung" aria-live="polite"></div>
 
       <div class="group-title">Potongan pribadi</div>
       <div class="row2">
@@ -382,7 +374,7 @@
       <div class="susun">
         <div class="group-title">Gambar produk</div>
         <button class="mini" id="susunBuat" type="button">Susun gambar</button>
-        <div class="info" id="susunInfo">Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Tombol Simpan otomatis ikut membuatnya.</div>
+        <div class="info" id="susunInfo">Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Tombol Simpan ZIP otomatis ikut membuatnya.</div>
         <div class="latar">
           <div class="tools">
             <button type="button" id="latarGanti">Ganti latar</button>
@@ -418,11 +410,15 @@
         <button class="btn ghost" id="reset" type="button">Reset</button>
         <button class="btn" id="xlsExport" type="button">Simpan</button>
       </div>
+      <div class="actions zip-row">
+        <button class="mini" id="zipExport" type="button">Simpan ZIP</button>
+        <span>Excel + gambar rincian + gambar susunan dalam satu file</span>
+      </div>
       <div class="actions">
         <button class="btn ghost" id="xlsImport" type="button" style="flex:1">Impor Excel</button>
         <input type="file" id="xlsFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
       </div>
-      <div class="hint">Simpan membuat file Excel dan gambar rincian sekaligus. Impor membaca file Excel dan mengisi nama produk, isi paket, serta biaya pribadi.</div>
+      <div class="hint">Simpan membuat file Excel saja. Simpan ZIP membuat Excel, gambar rincian, dan gambar susunan sekaligus dalam satu ZIP. Impor membaca file Excel dan mengisi nama produk, isi paket, harga jual, serta biaya pribadi. Komisi afiliasi dan pre order mengikuti Pengaturan.</div>
     </section>
 
     <!-- ===== Halaman database ===== -->
@@ -508,7 +504,7 @@
     <div class="row2">
       <div class="field"><label class="lbl" for="s_pemrosesan">Biaya pemrosesan</label>
         <div class="unit rp"><span>Rp</span><input class="input" id="s_pemrosesan" inputmode="numeric" autocomplete="off"></div></div>
-      <div class="field"><label class="lbl" for="s_affiliasi">Komisi afiliasi (awal)</label>
+      <div class="field"><label class="lbl" for="s_affiliasi">Komisi afiliasi</label>
         <div class="unit"><input class="input" id="s_affiliasi" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
     </div>
 
@@ -563,9 +559,9 @@ function isiPribadiAwal() { for (const k in AWAL_PRIBADI) $(k).value = fmtNum(AW
 
 const PF = {
   tiktok: { nama: "TikTok", sub: "TikTok Shop", ls: "pj-tarif",
-            std: { platform: 10, dinamis: 6.5, boost: 3.5, pph22: 0.5, preorder: 3, pemrosesan: 1250, affiliasi: 1 } },
+            std: { platform: 10, dinamis: 6.5, boost: 3.5, pph22: 0.5, preorder: 0, pemrosesan: 1250, affiliasi: 0 } },
   shopee: { nama: "Shopee", sub: "Shopee", ls: "pj-tarif-shopee",
-            std: { platform: 10, xtra: 6, promo: 0, pph22: 0.5, pemrosesan: 1250, affiliasi: 1 } }
+            std: { platform: 10, xtra: 6, promo: 0, pph22: 0.5, pemrosesan: 1250, affiliasi: 0 } }
 };
 function muatCfg(pl) {
   const out = { ...PF[pl].std }, v = bacaLS(PF[pl].ls, null);
@@ -752,9 +748,13 @@ function renderPaket(focusIdx) {
       if (e.key === "ArrowDown") { e.preventDefault(); geser(1); }
       else if (e.key === "ArrowUp") { e.preventDefault(); geser(-1); }
       else if (e.key === "Enter") {
+        // Enter = pilih barang lalu langsung buka baris berikutnya (sama seperti ketuk "+ Tambah Item")
         e.preventDefault();
+        if (!r.chosen && !inp.value.trim()) { tutup(); $("harga").focus(); return; }   // baris kosong: selesai, lanjut ke harga jual
+        if (r.chosen && active < 0) { tutup(); tambahBaris(); return; }
         const o = opts[active >= 0 ? active : 0];
-        if (o) pilih(i, o.it); else inp.blur();
+        if (o) { PAKET[i] = { nama: o.it.nama, chosen: true, snap: bijiOf(o.it) }; tambahBaris(); }
+        else inp.blur();
       } else if (e.key === "Escape") { tutup(); inp.blur(); }
     });
     inp.addEventListener("blur", () => {
@@ -796,24 +796,20 @@ function updateModal() {
   render();
 }
 
-$("addItem").addEventListener("click", () => {
+function tambahBaris() {
   const last = PAKET[PAKET.length - 1];
   if (last && !last.chosen && !last.nama.trim()) { renderPaket(PAKET.length - 1); return; }
   PAKET.push(newRow()); renderPaket(PAKET.length - 1);
-});
+}
+$("addItem").addEventListener("click", tambahBaris);
 $("newItem").addEventListener("click", () => bukaForm({ onSaved: (it) => tambahKePaket(it) }));
 
 /* =============== HITUNG & STRUK =============== */
-function pctInput(id) {
-  const v = parseFloat(($(id).value || "").replace(",", "."));
-  return isFinite(v) && v > 0 ? Math.min(v, 100) / 100 : 0;
-}
-function affRate() { return pctInput("affPct"); }
 
 function hitung() {
   const c = cfg();
   const harga = num("harga"), modal = num("modal");
-  const aff = $("aff").checked, ar = aff ? affRate() : 0;
+  const ar = c.affiliasi / 100;
   const pf = c.platform / 100, pph = c.pph22 / 100, proses = c.pemrosesan;
 
   const cust = customList().map(x => ({
@@ -835,10 +831,10 @@ function hitung() {
     const pm = c.promo / 100;
     if (pm > 0) potPlat.push({ label: `Promo Xtra (${pctText(pm)}%)`, amt: Math.round(harga * pm), rate: pm });
   }
-  if (aff && ar > 0) potPlat.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
+  if (ar > 0) potPlat.push({ label: `Komisi afiliasi (${pctText(ar)}%)`, amt: Math.round(harga * ar), rate: ar });
   if (proses > 0) potPlat.push({ label: "Biaya pemrosesan", amt: Math.round(proses), fixed: true });
   if (pph > 0) potPlat.push({ label: `PPh Pasal 22 (${pctText(pph)}%)`, amt: Math.round(harga * pph), rate: pph });
-  if (PLAT === "tiktok" && $("pre").checked && c.preorder > 0) {
+  if (PLAT === "tiktok" && c.preorder > 0) {
     const po = c.preorder / 100;
     potPlat.push({ label: `Potongan pre order (${pctText(po)}%)`, amt: Math.round(harga * po), rate: po });
   }
@@ -861,8 +857,16 @@ function hitung() {
   return { harga, modal, potPlat, totalPlat, cair, pribadi, totalPribadi, untung, margin, minJual };
 }
 
+function segarLive(d) {
+  const el = $("liveUntung");
+  if (d.harga <= 0) { el.innerHTML = '<span class="l">Untung bersih<small>Isi harga jual untuk melihat untung</small></span><span class="amt none">–</span>'; return; }
+  const loss = d.untung < 0, mt = (Math.round(d.margin * 10) / 10).toString().replace(".", ",");
+  el.innerHTML = `<span class="l">${loss ? "Rugi bersih" : "Untung bersih"}<small>Margin ${mt}%${d.minJual ? " · harga minimal " + rp(d.minJual) : ""}</small></span><span class="amt ${loss ? "loss" : ""}">${loss ? "- " : ""}${rp(d.untung)}</span>`;
+}
+
 function render() {
   const d = hitung();
+  segarLive(d);
   const nama = $("nama").value.trim();
   const box = $("receipt");
   if (d.harga <= 0) {
@@ -898,22 +902,11 @@ function render() {
     render();
   });
 });
-["nama", "affPct"].forEach(id => $(id).addEventListener("input", render));
-$("pre").addEventListener("change", () => { $("tgPre").classList.toggle("on", $("pre").checked); render(); });
-$("aff").addEventListener("change", () => {
-  const on = $("aff").checked;
-  $("tgAff").classList.toggle("on", on); $("affBox").classList.toggle("show", on);
-  if (on) $("affPct").focus();
-  render();
-});
+$("nama").addEventListener("input", render);
 
 $("reset").addEventListener("click", () => {
   ["nama", "modal", "harga"].forEach(id => $(id).value = "");
   isiPribadiAwal();
-  $("pre").checked = false; $("aff").checked = false;
-  $("affPct").value = fmtPct(cfg().affiliasi);
-  ["tgPre", "tgAff"].forEach(i => $(i).classList.remove("on"));
-  $("affBox").classList.remove("show");
   PAKET = [newRow()]; modalAuto = false;
   SUSUN = null; $("susunWrap").hidden = true;
   renderPaket();
@@ -1043,11 +1036,41 @@ const angka = (v) => {
   return isFinite(n) ? n : 0;
 };
 
-$("xlsExport").addEventListener("click", async () => {
+/* ---- ZIP sederhana (tanpa kompresi: PNG dan xlsx sudah terkompresi) ---- */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = (u) => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC_T[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+async function buatZip(files) {
+  const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
+  const d = new Date();
+  const dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF;
+  const dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+  for (const f of files) {
+    const data = new Uint8Array(await f.blob.arrayBuffer()), name = enc.encode(f.name), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, dt, true); lh.setUint16(12, dd, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(lh.buffer, name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, dt, true); ch.setUint16(14, dd, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+    central.push(ch.buffer, name);
+    offset += 30 + name.length + data.length;
+  }
+  const csize = central.reduce((s, x) => s + x.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, csize, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, end.buffer], { type: "application/zip" });
+}
+
+// penuh = false: hanya Excel. penuh = true: Excel + gambar rincian + gambar susunan.
+async function siapkanBerkas(penuh) {
   const nama = $("nama").value.trim();
-  if (!nama) { toast("Isi nama produk dulu, dipakai untuk nama file"); $("nama").focus(); return; }
-  if (typeof MiniXlsx === "undefined") { toast("File xlsx.js belum ikut diupload"); return; }
-  const d = hitung();
+  if (!nama) { toast("Isi nama produk dulu, dipakai untuk nama file"); $("nama").focus(); return null; }
+  if (typeof MiniXlsx === "undefined") { toast("File xlsx.js belum ikut diupload"); return null; }
+  const d = hitung(), c = cfg();
   const items = PAKET.filter(r => r.chosen).map(r => ({ nama: r.nama, biji: Math.round(rowBiji(r)) }));
   const tgl = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
   const NP = PF[PLAT].nama;
@@ -1060,8 +1083,10 @@ $("xlsExport").addEventListener("click", async () => {
     ["Harga jual", { v: d.harga, s: 2 }]
   ];
   if (PLAT === "tiktok") paket.push(["Biaya BLL", { v: num("bll"), s: 2 }]);
-  paket.push(["Biaya operasional", { v: num("ops"), s: 2 }], ["Komisi investor", { v: num("inv"), s: 2 }],
-    [{ v: "Modal barang", s: 1 }, { v: d.modal, s: 3 }], [], [{ v: "Nama barang", s: 4 }, { v: "Harga per biji", s: 4 }]);
+  paket.push(["Biaya operasional", { v: num("ops"), s: 2 }], ["Komisi investor", { v: num("inv"), s: 2 }]);
+  paket.push(["Komisi afiliasi (%)", { v: c.affiliasi, s: 5 }]);                                   // tarif saat file disimpan
+  if (PLAT === "tiktok") paket.push(["Potongan pre order (%)", { v: c.preorder, s: 5 }]);
+  paket.push([{ v: "Modal barang", s: 1 }, { v: d.modal, s: 3 }], [], [{ v: "Nama barang", s: 4 }, { v: "Harga per biji", s: 4 }]);
   items.forEach(x => paket.push([x.nama, { v: x.biji, s: 2 }]));
   const sheets = [{ name: "Paket", cols: [30, 20], rows: paket }];
 
@@ -1079,34 +1104,53 @@ $("xlsExport").addEventListener("click", async () => {
   }
   const xlsType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   const hasil = [{ blob: new Blob([MiniXlsx.buat(sheets)], { type: xlsType }), name: namaFile(nama, ".xlsx"), type: xlsType }];
-  if (d.harga > 0) {
-    const png = await new Promise(res => buatGambar(d, nama, items).toBlob(res, "image/png"));
-    hasil.push({ blob: png, name: namaFile(nama, ".png"), type: "image/png" });
-  } else {
-    toast("Harga jual kosong, jadi hanya Excel yang disimpan", 3500);
-  }
   let catatan = "";
-  if (items.length) {
-    try {
-      const r = await pastikanSusunan();
-      if (r.st) {
-        const pngS = await new Promise(res => gambarSusunan(r.st, -1).toBlob(res, "image/png"));
-        hasil.push({ blob: pngS, name: namaFile(nama + " - Susunan", ".png"), type: "image/png" });
-      }
-      const cat = [];
-      if (r.hilang && r.hilang.length) cat.push("gambar belum ada: " + r.hilang.slice(0, 3).join(", ") + (r.hilang.length > 3 ? "…" : ""));
-      if (r.tanpaTinggi && r.tanpaTinggi.length) cat.push("tinggi belum diisi untuk " + r.tanpaTinggi.length + " barang");
-      catatan = cat.join("; ");
-    } catch (e) { catatan = "gambar susunan gagal dibuat"; }
+  if (penuh) {
+    if (d.harga > 0) {
+      const png = await new Promise(res => buatGambar(d, nama, items).toBlob(res, "image/png"));
+      hasil.push({ blob: png, name: namaFile(nama, ".png"), type: "image/png" });
+    } else toast("Harga jual kosong, jadi gambar rincian tidak dibuat", 3500);
+    if (items.length) {
+      try {
+        const r = await pastikanSusunan();
+        if (r.st) {
+          const pngS = await new Promise(res => gambarSusunan(r.st, -1).toBlob(res, "image/png"));
+          hasil.push({ blob: pngS, name: namaFile(nama + " - Susunan", ".png"), type: "image/png" });
+        }
+        const cat = [];
+        if (r.hilang && r.hilang.length) cat.push("gambar belum ada: " + r.hilang.slice(0, 3).join(", ") + (r.hilang.length > 3 ? "…" : ""));
+        if (r.tanpaTinggi && r.tanpaTinggi.length) cat.push("tinggi belum diisi untuk " + r.tanpaTinggi.length + " barang");
+        catatan = cat.join("; ");
+      } catch (e) { catatan = "gambar susunan gagal dibuat"; }
+    }
   }
-  await kirimBerkas(hasil, nama, "Pilih “Simpan Gambar” dan “Simpan ke Berkas”", catatan);
+  return { nama, hasil, catatan };
+}
+
+// Simpan: hanya file Excel
+$("xlsExport").addEventListener("click", async () => {
+  const b = await siapkanBerkas(false);
+  if (b) await kirimBerkas(b.hasil, b.nama, "Pilih “Simpan ke Berkas”", "");
+});
+
+// Simpan ZIP: Excel + gambar rincian + gambar susunan dalam satu file
+$("zipExport").addEventListener("click", async () => {
+  const btn = $("zipExport"), teks = btn.textContent;
+  btn.disabled = true; btn.textContent = "Membuat ZIP…";
+  try {
+    const b = await siapkanBerkas(true);
+    if (!b) return;
+    const zip = await buatZip(b.hasil);
+    await kirimBerkas([{ blob: zip, name: namaFile(b.nama, ".zip"), type: "application/zip" }], b.nama, "Pilih “Simpan ke Berkas”", b.catatan);
+  } catch (e) { toast("Gagal membuat ZIP: " + (e.message || e), 5000); }
+  finally { btn.disabled = false; btn.textContent = teks; }
 });
 
 function uraiPaket(wb) {
   const sh = wb.sheets.find(x => x.name.toLowerCase() === "paket") || wb.sheets[0];
   if (!sh) throw new Error("File Excel kosong.");
   const nk = (t) => String(t == null ? "" : t).trim().toLowerCase().replace(/\s+/g, " ");
-  const peta = { "nama produk": "nama", "platform": "platform", "harga jual": "harga", "biaya bll": "bll", "biaya operasional": "ops", "komisi investor": "inv", "modal barang": "modal" };
+  const peta = { "nama produk": "nama", "platform": "platform", "harga jual": "harga", "biaya bll": "bll", "biaya operasional": "ops", "komisi investor": "inv", "modal barang": "modal", "komisi afiliasi (%)": "aff", "potongan pre order (%)": "pre" };
   const o = { items: [] };
   let hdr = -1, adaKunci = false;
   sh.rows.forEach((r, i) => {
@@ -1145,6 +1189,13 @@ function terapkanImpor(o) {
   if (o.harga != null && angka(o.harga) > 0) {
     if (sama) setUang("harga", o.harga);
     else info.push(`Harga jual tidak diimpor (file dari ${platFile}), isi harga ${PF[PLAT].nama} sendiri.`);
+  }
+
+  if (sama) {   // tarif di Pengaturan bisa berbeda dari saat file disimpan
+    const c = cfg(), beda = [];
+    if (o.aff != null && Math.abs(angka(o.aff) - c.affiliasi) > 0.001) beda.push(`afiliasi ${fmtPct(angka(o.aff))}% (sekarang ${fmtPct(c.affiliasi)}%)`);
+    if (PLAT === "tiktok" && o.pre != null && Math.abs(angka(o.pre) - c.preorder) > 0.001) beda.push(`pre order ${fmtPct(angka(o.pre))}% (sekarang ${fmtPct(c.preorder)}%)`);
+    if (beda.length) info.push("Catatan: file ini disimpan dengan " + beda.join(" dan ") + ". Samakan di Pengaturan kalau ingin hasilnya persis.");
   }
 
   let luarDb = 0; const tidak = [];
@@ -1760,7 +1811,7 @@ function tampilSusun(r) {
   const cat = [];
   if (r.hilang.length) cat.push("Gambar belum diupload: " + r.hilang.join(", ") + ".");
   if (r.tanpaTinggi.length) cat.push("Tinggi belum diisi (dipakai " + TINGGI_STANDAR + " cm): " + r.tanpaTinggi.join(", ") + ".");
-  infoSusun(cat.length ? cat.join(" ") : "Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Tombol Simpan otomatis ikut membuatnya.", cat.length > 0);
+  infoSusun(cat.length ? cat.join(" ") : "Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Tombol Simpan ZIP otomatis ikut membuatnya.", cat.length > 0);
 }
 function cekSusunBasi() {
   if (SUSUN && SUSUN.key !== kunciPaket()) infoSusun("Isi paket berubah. Ketuk “Susun gambar” lagi untuk memperbarui (posisi manual akan hilang).", true);
@@ -1854,9 +1905,6 @@ const LOGO = {
   shopee: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.4 8h15.2l-1 12.1a1.7 1.7 0 0 1-1.7 1.5H7.1a1.7 1.7 0 0 1-1.7-1.5z" fill="#ee4d2d"/><path d="M8.4 8V6.7a3.6 3.6 0 0 1 7.2 0V8" fill="none" stroke="#ee4d2d" stroke-width="1.8" stroke-linecap="round"/><text x="12" y="18.2" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" font-family="Arial, Helvetica, sans-serif">S</text></svg>',
   tiktok: '<svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><g transform="translate(-.9 -.6)" stroke="#25f4ee" fill="#25f4ee"><circle cx="9.5" cy="17" r="3.2" stroke="none"/><path d="M12.7 17V4"/><path d="M12.7 4c.4 2.6 2.2 4.4 5 4.8"/></g><g transform="translate(.9 .6)" stroke="#fe2c55" fill="#fe2c55"><circle cx="9.5" cy="17" r="3.2" stroke="none"/><path d="M12.7 17V4"/><path d="M12.7 4c.4 2.6 2.2 4.4 5 4.8"/></g><g stroke="#fff" fill="#fff"><circle cx="9.5" cy="17" r="3.2" stroke="none"/><path d="M12.7 17V4"/><path d="M12.7 4c.4 2.6 2.2 4.4 5 4.8"/></g></svg>'
 };
-function terapkanCfgKeUI() {
-  if (PLAT === "tiktok") $("preHint").textContent = `Potongan ${fmtPct(cfg().preorder)}% dari harga jual`;
-}
 function applyPlatform() {
   document.body.dataset.platform = PLAT;
   const tc = document.querySelector('meta[name="theme-color"]');
@@ -1865,10 +1913,8 @@ function applyPlatform() {
   $("openPlat").innerHTML = LOGO[lain] + "<span>" + PF[lain].nama + "</span>";
   $("openPlat").setAttribute("aria-label", "Pindah ke kalkulator " + PF[lain].nama);
   $("subHead").textContent = `Hitung modal dari isi paket dan untung bersih jualan di ${PF[PLAT].sub}.`;
-  $("grpPlat").textContent = `Potongan ${PF[PLAT].nama} (opsional)`;
   document.querySelectorAll("[data-only]").forEach(el => { el.hidden = el.dataset.only !== PLAT; });
-  if (!$("aff").checked) $("affPct").value = fmtPct(cfg().affiliasi);
-  terapkanCfgKeUI(); renderCustom(); render();
+  renderCustom(); render();
 }
 $("openPlat").addEventListener("click", () => {
   PLAT = PLAT === "tiktok" ? "shopee" : "tiktok";
@@ -1912,10 +1958,8 @@ $("setSave").addEventListener("click", () => {
   baru.pemrosesan = digitsOf("s_pemrosesan");
   const total = kunciSet().reduce((s, k) => s + baru[k], 0);
   if (total >= 100) { $("setErr").textContent = "Total persentase potongan tidak boleh 100% atau lebih."; return; }
-  const affLama = cfg().affiliasi;
   CFGS[PLAT] = baru; simpanLS(PF[PLAT].ls, baru);
-  if (affRate() * 100 === affLama || !$("affPct").value) $("affPct").value = fmtPct(cfg().affiliasi);
-  terapkanCfgKeUI(); tutupSetting(); render();
+  tutupSetting(); render();
   toast("Pengaturan tersimpan");
 });
 
@@ -1994,12 +2038,16 @@ document.addEventListener("visibilitychange", () => {
 
 /* =============== MULAI =============== */
 isiPribadiAwal();
-$("affPct").value = fmtPct(cfg().affiliasi);
 renderPaket();
 applyPlatform();
 renderStatus();
 tampil();
 infoLatar();
+if (!bacaLS("pj-info-aff", false)) {   // pemberitahuan satu kali: afiliasi & pre order kini ikut Pengaturan
+  simpanLS("pj-info-aff", true);
+  const c = cfg();
+  if (c.affiliasi > 0 || (PLAT === "tiktok" && c.preorder > 0)) setTimeout(() => toast(`Komisi afiliasi ${fmtPct(c.affiliasi)}%${PLAT === "tiktok" ? ` dan pre order ${fmtPct(c.preorder)}%` : ""} sekarang selalu dihitung. Atur di Pengaturan, isi 0 untuk mematikan.`, 9000), 900);
+}
 if (!CONN.url) tampilKunci("URL Apps Script belum diisi. Buka index.html lalu isi SCRIPT_URL di bagian atas script.");
 else if (!CONN.kunci) tampilKunci("");
 else { bukaKunci(); sinkron(true); }
