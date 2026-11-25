@@ -412,13 +412,14 @@
       </div>
       <div class="actions zip-row">
         <button class="mini" id="zipExport" type="button">Simpan ZIP</button>
-        <span>Excel + gambar rincian + gambar susunan dalam satu file</span>
+        <button class="mini" id="imgExport" type="button">Simpan gambar saja</button>
       </div>
+      <div class="hint">ZIP berisi Excel, gambar rincian, dan gambar susunan. “Simpan gambar saja” hanya menyimpan gambar susunan produk.</div>
       <div class="actions">
         <button class="btn ghost" id="xlsImport" type="button" style="flex:1">Impor Excel</button>
         <input type="file" id="xlsFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
       </div>
-      <div class="hint">Simpan membuat file Excel saja. Simpan ZIP membuat Excel, gambar rincian, dan gambar susunan sekaligus dalam satu ZIP. Impor membaca file Excel dan mengisi nama produk, isi paket, harga jual, serta biaya pribadi. Komisi afiliasi dan pre order mengikuti Pengaturan.</div>
+      <div class="hint">Simpan membuat file Excel saja. Simpan ZIP membuat Excel, gambar rincian, dan gambar susunan sekaligus dalam satu ZIP. Simpan gambar saja hanya menyimpan gambar susunan produk. Impor membaca file Excel dan mengisi nama produk, isi paket, harga jual, serta biaya pribadi. Komisi afiliasi dan pre order mengikuti Pengaturan.</div>
     </section>
 
     <!-- ===== Halaman database ===== -->
@@ -1131,6 +1132,27 @@ async function siapkanBerkas(penuh) {
 $("xlsExport").addEventListener("click", async () => {
   const b = await siapkanBerkas(false);
   if (b) await kirimBerkas(b.hasil, b.nama, "Pilih “Simpan ke Berkas”", "");
+});
+
+// Simpan gambar saja: hanya gambar susunan produk (PNG)
+$("imgExport").addEventListener("click", async () => {
+  if (!PAKET.some(r => r.chosen)) { toast("Pilih barang di Isi Paket dulu"); return; }
+  const btn = $("imgExport"), teks = btn.textContent;
+  btn.disabled = true; btn.textContent = "Membuat gambar…";
+  try {
+    const r = await pastikanSusunan();
+    if (!r.st) {
+      toast(r.hilang && r.hilang.length ? "Gambar belum diupload untuk: " + r.hilang.slice(0, 3).join(", ") + (r.hilang.length > 3 ? "…" : "") : "Gambar susunan tidak bisa dibuat", 5000);
+      return;
+    }
+    const png = await new Promise(res => gambarSusunan(r.st, -1).toBlob(res, "image/png"));
+    const nama = $("nama").value.trim() || "Susunan paket";
+    const cat = [];
+    if (r.hilang && r.hilang.length) cat.push("gambar belum ada: " + r.hilang.slice(0, 3).join(", ") + (r.hilang.length > 3 ? "…" : ""));
+    if (r.tanpaTinggi && r.tanpaTinggi.length) cat.push("tinggi belum diisi untuk " + r.tanpaTinggi.length + " barang");
+    await kirimBerkas([{ blob: png, name: namaFile($("nama").value.trim() ? nama + " - Susunan" : nama, ".png"), type: "image/png" }], nama, "Pilih “Simpan Gambar”", cat.join("; "));
+  } catch (e) { toast("Gagal membuat gambar: " + (e.message || e), 5000); }
+  finally { btn.disabled = false; btn.textContent = teks; }
 });
 
 // Simpan ZIP: Excel + gambar rincian + gambar susunan dalam satu file

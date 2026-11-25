@@ -1,4 +1,4 @@
-const CACHE = "paket-jajan-v15";
+const CACHE = "paket-jajan-v16";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./xlsx.js"];
 
 self.addEventListener("install", (e) => {
