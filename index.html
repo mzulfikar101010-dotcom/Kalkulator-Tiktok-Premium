@@ -296,6 +296,25 @@
   .lt.add { border-style: dashed; }
   .lt.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ring); }
   .lt .del { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(0,0,0,.62); color: #fff; font-size: 14px; line-height: 1; display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .bchips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .bchip { padding: 8px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--paper-2); color: var(--ink); font: inherit; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+  .bchip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .berat-input { margin-top: 10px; }
+  .berat-input .input { padding-left: 14px; padding-right: 36px; }
+  .money .suf { left: auto; right: 14px; }
+  .rincian-bar { margin: 4px 0 10px; }
+  .receipt[hidden] { display: none; }
+  .card.pk { display: flex; gap: 12px; align-items: flex-start; }
+  .pk-thumb { flex: none; width: 96px; height: 96px; border-radius: 10px; background: var(--paper-2); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; color: var(--muted); font-size: 11px; text-align: center; padding: 4px; }
+  .pk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; margin: -4px; width: calc(100% + 8px); height: calc(100% + 8px); }
+  .pk-main { flex: 1; min-width: 0; }
+  .pk-items { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pk-it { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 3px; border-radius: 999px; background: var(--paper-2); font-size: 12px; line-height: 1.2; max-width: 100%; }
+  .pk-it .ico { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; font-size: 11px; font-weight: 700; color: var(--muted); }
+  .pk-it .ico img { width: 100%; height: 100%; object-fit: contain; }
+  .pk-it b { font-weight: 700; color: var(--teal); font-size: 11px; }
+  .tools button { user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+  @media (max-width: 420px) { .pk-thumb { width: 78px; height: 78px; } }
   .refgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
   .ref { background: #000; border: 2px solid transparent; border-radius: 10px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; font: inherit; color: #fff; min-width: 0; }
   .ref .pic { height: 96px; display: flex; align-items: flex-end; justify-content: center; }
@@ -356,7 +375,13 @@
       <button class="mini" id="addItem" type="button">+ Tambah Item</button>
       <button class="linkbtn" id="newItem" type="button">Barang tidak ada di daftar? Input barang baru</button>
 
-      <div class="row2" style="margin-top:20px">
+      <div class="field berat" style="margin-top:20px">
+        <label class="lbl">Berat paket</label>
+        <div class="bchips" id="beratChips"></div>
+        <div class="money berat-input" id="beratBox" hidden><input class="input" id="berat" inputmode="numeric" placeholder="Ketik berat" autocomplete="off"><span class="suf">g</span></div>
+      </div>
+
+      <div class="row2" style="margin-top:6px">
         <div class="field">
           <label class="lbl" for="modal">Modal barang</label>
           <div class="money"><span>Rp</span><input class="input" id="modal" inputmode="numeric" placeholder="0" autocomplete="off"></div>
@@ -369,6 +394,8 @@
       </div>
 
       <div class="live" id="liveUntung" aria-live="polite"></div>
+      <div class="rincian-bar"><button class="mini" id="rincianToggle" type="button" aria-expanded="false">Munculkan rincian ▾</button></div>
+      <div class="receipt" id="receipt" hidden></div>
 
       <div class="group-title">Potongan pribadi</div>
       <div class="row2">
@@ -391,8 +418,6 @@
       <button class="mini" id="addCustom" type="button">+ Tambah biaya persen</button>
       <div class="hint">Dipotong dari harga jual. Untuk tiap biaya, pilih masuk ke potongan platform atau potongan pribadi. Tersimpan di HP.</div>
 
-      <div class="receipt" id="receipt"></div>
-
       <div class="susun">
         <div class="group-title">Gambar produk</div>
         <button class="mini" id="susunBuat" type="button">Susun gambar</button>
@@ -410,8 +435,10 @@
         <div id="susunWrap" hidden>
           <div style="height:12px"></div>
           <canvas id="susunCv" width="1080" height="1080"></canvas>
-          <div class="info">Ketuk barang untuk memilih, lalu geser dengan jari atau pakai tombol di bawah.</div>
+          <div class="info">Ketuk barang untuk memilih, lalu geser dengan jari atau pakai tombol di bawah. “Geser semua” menggeser seluruh barang sekaligus; tahan tombolnya untuk geser terus.</div>
           <div class="tools">
+            <button type="button" id="sAllL" aria-label="Geser semua ke kiri">◀ Geser semua</button>
+            <button type="button" id="sAllR" aria-label="Geser semua ke kanan">Geser semua ▶</button>
             <button type="button" id="sL" aria-label="Geser kiri">◀</button>
             <button type="button" id="sU" aria-label="Geser atas">▲</button>
             <button type="button" id="sD" aria-label="Geser bawah">▼</button>
@@ -941,7 +968,7 @@ $("reset").addEventListener("click", () => {
   isiPribadiAwal();
   PAKET = [newRow()]; modalAuto = false;
   SUSUN = null; $("susunWrap").hidden = true;
-  CURPAKET = null; tampilPaketAktif(null);
+  CURPAKET = null; tampilPaketAktif(null); setBerat(0);
   renderPaket();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
@@ -1089,6 +1116,7 @@ async function siapkanBerkas() {
   paket.push(["Biaya operasional", { v: num("ops"), s: 2 }], ["Komisi investor", { v: num("inv"), s: 2 }]);
   paket.push(["Komisi afiliasi (%)", { v: c.affiliasi, s: 5 }]);                                   // tarif saat file disimpan
   if (PLAT === "tiktok") paket.push(["Potongan pre order (%)", { v: c.preorder, s: 5 }]);
+  if (BERAT > 0) paket.push(["Berat paket (g)", BERAT]);
   paket.push([{ v: "Modal barang", s: 1 }, { v: d.modal, s: 3 }], [], [{ v: "Nama barang", s: 4 }, { v: "Harga per biji", s: 4 }]);
   items.forEach(x => paket.push([x.nama, { v: x.biji, s: 2 }]));
   const sheets = [{ name: "Paket", cols: [30, 20], rows: paket }];
@@ -1142,7 +1170,7 @@ function uraiPaket(wb) {
   const sh = wb.sheets.find(x => x.name.toLowerCase() === "paket") || wb.sheets[0];
   if (!sh) throw new Error("File Excel kosong.");
   const nk = (t) => String(t == null ? "" : t).trim().toLowerCase().replace(/\s+/g, " ");
-  const peta = { "nama produk": "nama", "platform": "platform", "harga jual": "harga", "biaya bll": "bll", "biaya operasional": "ops", "komisi investor": "inv", "modal barang": "modal", "komisi afiliasi (%)": "aff", "potongan pre order (%)": "pre" };
+  const peta = { "nama produk": "nama", "platform": "platform", "harga jual": "harga", "biaya bll": "bll", "biaya operasional": "ops", "komisi investor": "inv", "modal barang": "modal", "komisi afiliasi (%)": "aff", "potongan pre order (%)": "pre", "berat paket (g)": "berat" };
   const o = { items: [] };
   let hdr = -1, adaKunci = false;
   sh.rows.forEach((r, i) => {
@@ -1174,6 +1202,7 @@ function terapkanImpor(o) {
   const setUang = (id, v) => { if (v == null || v === "") return; $(id).value = fmtNum(Math.round(angka(v))); };
   if (o.nama) $("nama").value = String(o.nama).trim();
   setUang("ops", o.ops); setUang("inv", o.inv);
+  if (o.berat != null && angka(o.berat) > 0) setBerat(Math.round(angka(o.berat)));
   if (PLAT === "tiktok") setUang("bll", o.bll);
 
   const platFile = String(o.platform || "").trim();
@@ -1231,8 +1260,14 @@ function renderStatus() {
   if (gambarErr) { s.classList.add("err"); s.textContent += " Gambar belum tersinkron ke Drive: " + gambarErr; }
 }
 
+// Gambar kartu barang baru dimuat saat kartunya mendekati layar, supaya ratusan barang tidak mengunduh ratusan gambar sekaligus.
+const obsThumb = "IntersectionObserver" in window ? new IntersectionObserver((es) => {
+  es.forEach(e => { if (e.isIntersecting) { obsThumb.unobserve(e.target); if (e.target._segar) e.target._segar(); } });
+}, { rootMargin: "400px 0px" }) : null;
+
 function renderDb() {
   if ($("pgDb").hidden) return;
+  if (obsThumb) obsThumb.disconnect();
   const q = $("dbSearch").value.trim().toLowerCase();
   const list = $("dbList"); list.innerHTML = "";
   const items = sortedItems().filter(it => !q || q.split(/\s+/).every(w => it.nama.toLowerCase().includes(w)));
@@ -1244,7 +1279,7 @@ function renderDb() {
     const c = mk("div", "card"), wrap = mk("div", "cwrap"), main = mk("div", "cmain"), top = mk("div", "top");
     const box = mk("button", "thumb-box"); box.type = "button"; box.setAttribute("aria-label", "Upload gambar " + it.nama);
     const th = mk("img"); th.alt = ""; th.hidden = true;
-    const tx = mk("span", "", "+ Gambar"); box.append(th, tx);
+    const tx = mk("span", "", obsThumb ? "" : "+ Gambar"); box.append(th, tx);
     const fi = document.createElement("input"); fi.type = "file"; fi.accept = "image/*"; fi.hidden = true;
     const pb = mk("div", "pb", "Rp " + fmtNum(bijiOf(it))); pb.append(mk("small", "", "per biji"));
     top.append(mk("div", "nm", it.nama), pb);
@@ -1289,7 +1324,8 @@ function renderDb() {
     dp.addEventListener("click", () => bukaForm({ salin: it }));
     ops.append(ug, hg, dp, ub, hp); main.append(ops);
     wrap.append(box, main); c.append(wrap, fi); list.append(c);
-    segar();
+    c._segar = segar;
+    if (obsThumb) obsThumb.observe(c); else segar();
   });
 }
 
@@ -1346,6 +1382,7 @@ async function muatPaketDb(diam) {
 function renderPaketDb() {
   if ($("pgPaket").hidden) return;
   renderPaketStatus();
+  if (obsPk) obsPk.disconnect();
   const q = $("pkSearch").value.trim().toLowerCase();
   const list = $("pkList"); list.innerHTML = "";
   const arr = [...PAKETDB].sort((a, b) => (b.ts || 0) - (a.ts || 0)).filter(p => {
@@ -1355,16 +1392,38 @@ function renderPaketDb() {
   if (!arr.length) { list.append(mk("div", "empty", PAKETDB.length ? "Tidak ada paket yang cocok." : "Belum ada paket. Susun paket di kalkulator, lalu ketuk “Simpan ke database”.")); return; }
   arr.forEach(p => {
     const d = p.data || {}, its = d.items || [];
-    const c = mk("div", "card clickable"), top = mk("div", "top");
+    const c = mk("div", "card pk clickable");
+    const th = mk("div", "pk-thumb"), thImg = document.createElement("img"); thImg.alt = ""; thImg.hidden = true;
+    const thTx = mk("span", "", "…"); th.append(thImg, thTx);
+    const main = mk("div", "pk-main"), top = mk("div", "top");
     top.append(mk("div", "nm", pkNama(p)), mk("div", "pb", PF[p.plat] ? PF[p.plat].nama : String(p.plat)));
-    c.append(top, mk("div", "sub", its.length + " jenis · Harga jual " + rp(d.harga || 0)), mk("div", "sub clip", ringkasItems(its)));
+    main.append(top, mk("div", "sub", its.length + " jenis" + (d.berat ? " · " + fmtG(d.berat) : "") + " · Harga jual " + rp(d.harga || 0)));
+    // ikon kecil + nama untuk tiap barang di paket
+    const wrap = mk("div", "pk-items"), grp = new Map(), icons = [];
+    its.forEach(x => grp.set(x.n, (grp.get(x.n) || 0) + 1));
+    grp.forEach((k, n) => {
+      const chip = mk("span", "pk-it"), ic = mk("span", "ico"), lt = mk("span", "", n.trim().charAt(0).toUpperCase()), im = document.createElement("img");
+      im.alt = ""; im.hidden = true; ic.append(lt, im); chip.append(ic, document.createTextNode(n));
+      if (k > 1) chip.append(mk("b", "", "×" + k));
+      wrap.append(chip); icons.push({ n, im, lt });
+    });
+    main.append(wrap);
     const ops = mk("div", "ops"), bk = mk("button", "", "Buka"), hp = mk("button", "del", "Hapus");
-    bk.type = hp.type = "button"; ops.append(bk, hp); c.append(ops);
+    bk.type = hp.type = "button"; ops.append(bk, hp); main.append(ops);
+    c.append(th, main);
+    const pasang = (img, blob, after) => { const u = URL.createObjectURL(blob); img.onload = () => { URL.revokeObjectURL(u); after(); }; img.src = u; };
+    c._muat = async () => {
+      icons.forEach(o => ambilRecHemat(o.n).then(rec => { if (rec && rec.blob) pasang(o.im, rec.blob, () => { o.im.hidden = false; o.lt.hidden = true; }); }));
+      let blob = await ambilThumbPaket(p);
+      if (!blob) { thTx.textContent = d.susun ? "Membuat gambar…" : "Belum ada gambar"; blob = await buatThumbPaket(p); }
+      if (blob) pasang(thImg, blob, () => { thImg.hidden = false; thTx.hidden = true; }); else thTx.textContent = "Belum ada gambar";
+    };
+    if (obsPk) obsPk.observe(c); else c._muat();
     c.addEventListener("click", () => bukaPaket(p));
     hp.addEventListener("click", async (e) => {
       e.stopPropagation();
       if (!confirm("Hapus paket “" + pkNama(p) + "” dari database?")) return;
-      try { await panggilAman("paketHapus", { id: p.id }); PAKETDB = PAKETDB.filter(x => x.id !== p.id); simpanLS("pj-paketdb", PAKETDB); if (CURPAKET === p.id) { CURPAKET = null; tampilPaketAktif(null); } renderPaketDb(); toast("Paket dihapus"); }
+      try { await panggilAman("paketHapus", { id: p.id }); PAKETDB = PAKETDB.filter(x => x.id !== p.id); simpanLS("pj-paketdb", PAKETDB); IMGDB.del("pk:" + p.id); if (CURPAKET === p.id) { CURPAKET = null; tampilPaketAktif(null); } renderPaketDb(); toast("Paket dihapus"); }
       catch (err) { toast(err.message, 4500); }
     });
     list.append(c);
@@ -1377,26 +1436,30 @@ function tampilPaketAktif(rec) {
   if (rec) e.textContent = "Paket dari database: “" + pkNama(rec) + "”. Ubah lalu ketuk “Simpan ke database” untuk memperbarui.";
 }
 
+const normNama = (t) => String(t || "").replace(/\s+/g, " ").trim().toLowerCase();
 async function simpanPaketDb() {
-  const nama = $("nama").value.trim(), dipilih = PAKET.filter(r => r.chosen);
+  const nama = $("nama").value.trim().replace(/\s+/g, " "), dipilih = PAKET.filter(r => r.chosen);
   if (!nama) { toast("Isi nama produk dulu"); $("nama").focus(); return; }
   if (!dipilih.length) { toast("Pilih barang di Isi Paket dulu"); return; }
   if (!CONN.url || !CONN.kunci) { toast("Belum terhubung ke Apps Script"); return; }
-  const ada = PAKETDB.find(p => p.plat === PLAT && pkNama(p).toLowerCase() === nama.toLowerCase());
-  if (ada && ada.id !== CURPAKET && !confirm("Paket “" + pkNama(ada) + "” sudah ada di database. Timpa dengan yang ini?")) return;
+  // Aturan: nama yang sama menimpa paket sebelumnya (tanpa membuat paket baru)
+  const ada = PAKETDB.find(p => normNama(pkNama(p)) === normNama(nama));
   const id = ada ? ada.id : newPkId();
   const btn = $("dbSimpan"), teks = btn.textContent; btn.disabled = true; btn.textContent = "Menyimpan…";
   try {
     const r = await pastikanSusunan();
     const r1 = (v) => Math.round(v * 10) / 10;
     const susun = r.st ? { items: r.st.items.map(o => ({ i: o.idx, x: r1(o.x), y: r1(o.y), w: r1(o.w), h: r1(o.h), z: o.z })), latar: LATAR_ID, lantai: LANTAI, margin: MARGIN } : null;
-    const data = { nama, harga: num("harga"), bll: num("bll"), ops: num("ops"), inv: num("inv"), items: dipilih.map(x => ({ n: x.nama, s: Math.round(rowBiji(x)) })), susun };
-    const j = await panggilAman("paketSimpan", { id, nama, plat: PLAT, data });
-    const rec = { id, nama, plat: PLAT, ts: Number(j.ts) || Date.now(), data };
-    PAKETDB = PAKETDB.filter(p => p.id !== id); PAKETDB.push(rec); simpanLS("pj-paketdb", PAKETDB);
-    CURPAKET = id; tampilPaketAktif(rec);
+    const data = { nama, harga: num("harga"), bll: num("bll"), ops: num("ops"), inv: num("inv"), berat: BERAT, items: dipilih.map(x => ({ n: x.nama, s: Math.round(rowBiji(x)) })), susun };
+    let tb = null; if (r.st) { try { tb = await thumbPaketB64(r.st); } catch (e) {} }
+    const j = await panggilAman("paketSimpan", { id, nama, plat: PLAT, data, thumb: tb ? tb.b64 : "" });
+    const idPakai = j.id || id;
+    const rec = { id: idPakai, nama, plat: PLAT, ts: Number(j.ts) || Date.now(), data, th: tb ? 1 : (ada && ada.th ? 1 : 0) };
+    PAKETDB = PAKETDB.filter(p => p.id !== idPakai && normNama(pkNama(p)) !== normNama(nama)); PAKETDB.push(rec); simpanLS("pj-paketdb", PAKETDB);
+    if (tb) IMGDB.put("pk:" + idPakai, { blob: tb.blob, ts: rec.ts, pending: false, nama: "pk:" + idPakai }).catch(() => {});
+    CURPAKET = idPakai; tampilPaketAktif(rec);
     const cat = !r.st && r.hilang && r.hilang.length ? " Susunan gambar tidak ikut tersimpan karena gambar belum diupload: " + r.hilang.slice(0, 3).join(", ") + "." : "";
-    toast("Paket tersimpan di database." + cat, cat ? 6000 : 2800);
+    toast((ada ? "Paket “" + nama + "” diperbarui (menimpa yang lama)." : "Paket baru tersimpan di database.") + cat, cat ? 6000 : 3200);
   } catch (e) {
     toast("Gagal menyimpan paket: " + (/tidak dikenal/i.test(e.message) ? "Apps Script belum diperbarui (Kode.gs)." : e.message), 6000);
   } finally { btn.disabled = false; btn.textContent = teks; }
@@ -1425,6 +1488,7 @@ async function bukaPaket(pk) {
   $("nama").value = pkNama(pk);
   $("harga").value = d.harga ? fmtNum(d.harga) : "";
   ["bll", "ops", "inv"].forEach(k => { $(k).value = fmtNum(d[k] || 0); });
+  setBerat(Number(d.berat) || 0);
   PAKET = (d.items || []).map(x => ({ nama: x.n, chosen: true, snap: Number(x.s) || 0 }));
   if (!PAKET.length) PAKET = [newRow()];
   modalAuto = false; SUSUN = null; $("susunWrap").hidden = true;
@@ -1448,6 +1512,119 @@ $("pkRefresh").addEventListener("click", () => muatPaketDb(false));
 $("backCalc2").addEventListener("click", () => { location.hash = ""; });
 $("openPaketDb").addEventListener("click", () => { location.hash = location.hash === "#paket" ? "" : "#paket"; });
 $("dbSimpan").addEventListener("click", simpanPaketDb);
+
+/* =============== BERAT PAKET, RINCIAN, GAMBAR PAKET =============== */
+const BERAT_OPSI = [500, 1000, 1300, 1500, 2000, 2300, 2500, 3000];
+let BERAT = 0, beratManual = false;
+const fmtG = (n) => Number(n).toLocaleString("id-ID") + " g";
+function renderBerat() {
+  const box = $("beratChips"); box.innerHTML = "";
+  BERAT_OPSI.forEach(g => {
+    const b = mk("button", "bchip" + (!beratManual && BERAT === g ? " on" : ""), fmtG(g)); b.type = "button";
+    b.addEventListener("click", () => { beratManual = false; BERAT = BERAT === g ? 0 : g; $("berat").value = ""; renderBerat(); });
+    box.append(b);
+  });
+  const k = mk("button", "bchip" + (beratManual ? " on" : ""), "Ketik sendiri"); k.type = "button";
+  k.addEventListener("click", () => {
+    beratManual = !beratManual;
+    if (beratManual) $("berat").value = BERAT ? String(BERAT) : ""; else if (!BERAT_OPSI.includes(BERAT)) BERAT = 0;
+    renderBerat(); if (beratManual) $("berat").focus();
+  });
+  box.append(k);
+  $("beratBox").hidden = !beratManual;
+}
+function setBerat(g) {
+  BERAT = Math.max(0, Math.round(Number(g) || 0));
+  beratManual = BERAT > 0 && !BERAT_OPSI.includes(BERAT);
+  $("berat").value = beratManual ? String(BERAT) : "";
+  renderBerat();
+}
+$("berat").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6); BERAT = parseInt(e.target.value, 10) || 0; });
+renderBerat();
+
+let RINCIAN = !!bacaLS("pj-rincian", false);
+function segarRincian() {
+  $("receipt").hidden = !RINCIAN;
+  $("rincianToggle").textContent = RINCIAN ? "Sembunyikan rincian ▴" : "Munculkan rincian ▾";
+  $("rincianToggle").setAttribute("aria-expanded", String(RINCIAN));
+}
+$("rincianToggle").addEventListener("click", () => { RINCIAN = !RINCIAN; simpanLS("pj-rincian", RINCIAN); segarRincian(); });
+segarRincian();
+
+// Ambil data gambar barang sekali saja walau diminta banyak kartu sekaligus
+const rekP = new Map();
+function ambilRecHemat(nama) {
+  const k = imgKey(nama);
+  if (!rekP.has(k)) rekP.set(k, ambilRec(nama).catch(() => null).finally(() => setTimeout(() => rekP.delete(k), 0)));
+  return rekP.get(k);
+}
+const kecilkan = (cv, sz = 240, q = 0.8) => new Promise(res => {
+  const c = document.createElement("canvas"); c.width = c.height = sz;
+  const g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(cv, 0, 0, sz, sz); c.toBlob(res, "image/jpeg", q);
+});
+async function thumbPaketB64(st) {   // gambar kecil susunan untuk kartu paket (harus < 45.000 karakter agar muat di sel spreadsheet)
+  let blob = await kecilkan(gambarSusunan(st, -1)), b64 = await blobKeB64(blob);
+  if (b64.length > 40000) { blob = await kecilkan(gambarSusunan(st, -1), 200, 0.6); b64 = await blobKeB64(blob); }
+  return { blob, b64 };
+}
+async function ambilThumbPaket(pk) {
+  const key = "pk:" + pk.id, loc = await IMGDB.get(key);
+  if (loc && loc.blob && loc.ts >= (pk.ts || 0)) return loc.blob;
+  if (pk.th && CONN.url && CONN.kunci) {
+    try {
+      const j = await dalamAntri(() => panggilAman("paketThumb", { id: pk.id }));
+      if (j.data) { const blob = b64KeBlob(j.data, "image/jpeg"); await IMGDB.put(key, { blob, ts: pk.ts || 0, pending: false, nama: key }); return blob; }
+    } catch (e) {}
+  }
+  return loc && loc.blob ? loc.blob : null;
+}
+// Paket lama yang belum punya gambar kecil: dibuat dari susunan tersimpan, satu per satu, lalu dikirim ke database.
+let rantaiThumb = Promise.resolve();
+const sedangThumb = new Map();
+function buatThumbPaket(pk) {
+  if (!sedangThumb.has(pk.id)) {
+    const p = rantaiThumb.then(() => genThumbPaket(pk)).catch(() => null).finally(() => sedangThumb.delete(pk.id));
+    sedangThumb.set(pk.id, p); rantaiThumb = p;
+  }
+  return sedangThumb.get(pk.id);
+}
+async function genThumbPaket(pk) {
+  const d = pk.data || {}, sv = d.susun, its = d.items || [];
+  if (!sv || !Array.isArray(sv.items) || !its.length || sv.items.length !== its.length) return null;
+  const cvs = [];
+  for (const x of its) { const cv = await gambarProduk(x.n); if (!cv) return null; cvs.push(cv); }
+  let latar = null;
+  if (sv.latar) { const rec = await ambilRec(sv.latar); if (rec && rec.blob) latar = await muatImg(URL.createObjectURL(rec.blob)); }
+  const items = sv.items.map(o => {
+    const cv = cvs[o.i]; if (!cv) return null;
+    const w = o.h * cv.width / cv.height;
+    return { cv, h: o.h, w, x: o.x + o.w / 2 - w / 2, y: o.y, z: o.z };
+  });
+  if (items.some(x => !x)) return null;
+  const { blob, b64 } = await thumbPaketB64({ items, latar });
+  const key = "pk:" + pk.id;
+  await IMGDB.put(key, { blob, ts: pk.ts || 0, pending: false, nama: key });
+  pk.th = 1;
+  if (CONN.url && CONN.kunci) panggilAman("paketThumbSimpan", { id: pk.id, thumb: b64 }).catch(() => {});
+  return blob;
+}
+
+const obsPk = "IntersectionObserver" in window ? new IntersectionObserver((es) => {
+  es.forEach(e => { if (e.isIntersecting) { obsPk.unobserve(e.target); if (e.target._muat) e.target._muat(); } });
+}, { rootMargin: "400px 0px" }) : null;
+
+/* ---- Geser semua barang di susunan ke kiri/kanan (tahan tombol untuk geser terus) ---- */
+function geserSemua(dx) { if (!SUSUN) return; SUSUN.items.forEach(it => { it.x += dx; }); redrawSusun(); }
+function tahan(el, fn) {
+  let t = null, iv = null;
+  const stop = () => { clearTimeout(t); clearInterval(iv); t = iv = null; };
+  el.addEventListener("pointerdown", (e) => { e.preventDefault(); stop(); fn(); t = setTimeout(() => { iv = setInterval(fn, 45); }, 350); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } });
+}
+tahan($("sAllL"), () => geserSemua(-10));
+tahan($("sAllR"), () => geserSemua(10));
+
 
 
 /* =============== FORM BARANG =============== */
