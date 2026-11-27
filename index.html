@@ -281,6 +281,21 @@
   .live .amt.none { color: var(--muted); font-weight: 600; }
   .zip-row { align-items: center; margin-top: 10px; }
   .zip-row span { font-size: 12px; color: var(--muted); line-height: 1.3; }
+  .paket-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 8px; }
+  .paket-head .paket-title { margin: 0 0 0 2px; }
+  .paket-title .jml { color: var(--teal); margin-left: 4px; }
+  .mini.rst { padding: 6px 12px; font-size: 13px; color: var(--muted); }
+  .paket-aktif { margin: -6px 2px 12px; color: var(--teal); }
+  .card.clickable { cursor: pointer; }
+  .card .sub.clip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .latar { margin-top: 14px; }
+  .lpick { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; -webkit-overflow-scrolling: touch; }
+  .lt { position: relative; flex: none; width: 72px; height: 72px; border-radius: 10px; border: 2px solid var(--line); background: var(--paper-2); overflow: hidden; cursor: pointer; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .lt img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .lt.polos { background: linear-gradient(#f6f1e4 60%, #d9bf93 60%); color: var(--ink); }
+  .lt.add { border-style: dashed; }
+  .lt.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ring); }
+  .lt .del { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(0,0,0,.62); color: #fff; font-size: 14px; line-height: 1; display: grid; place-items: center; cursor: pointer; padding: 0; }
   .refgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
   .ref { background: #000; border: 2px solid transparent; border-radius: 10px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; font: inherit; color: #fff; min-width: 0; }
   .ref .pic { height: 96px; display: flex; align-items: flex-end; justify-content: center; }
@@ -298,6 +313,9 @@
   <div class="hbtns">
     <button class="plat" id="openPlat" type="button"></button>
     <div class="grp">
+    <button class="hbtn" id="openPaketDb" type="button" aria-label="Database paket">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5 12 12l9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+    </button>
     <button class="hbtn" id="openDb" type="button" aria-label="Database barang">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/><path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
     </button>
@@ -329,7 +347,11 @@
         <input class="input" id="nama" type="text" placeholder="Contoh: Paket Jajan Hemat A" autocomplete="off">
       </div>
 
-      <div class="paket-title">Isi Paket</div>
+      <div class="hint paket-aktif" id="paketAktif" hidden></div>
+      <div class="paket-head">
+        <div class="paket-title">Isi Paket <span class="jml" id="jmlJenis"></span></div>
+        <button class="mini rst" id="reset" type="button">Reset</button>
+      </div>
       <div id="paketList"></div>
       <button class="mini" id="addItem" type="button">+ Tambah Item</button>
       <button class="linkbtn" id="newItem" type="button">Barang tidak ada di daftar? Input barang baru</button>
@@ -374,14 +396,12 @@
       <div class="susun">
         <div class="group-title">Gambar produk</div>
         <button class="mini" id="susunBuat" type="button">Susun gambar</button>
-        <div class="info" id="susunInfo">Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Tombol Simpan ZIP otomatis ikut membuatnya.</div>
+        <div class="info" id="susunInfo">Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Susunan ikut tersimpan saat paket disimpan ke database.</div>
         <div class="latar">
-          <div class="tools">
-            <button type="button" id="latarGanti">Ganti latar</button>
-            <button type="button" id="latarHapus">Hapus latar</button>
-            <input type="file" id="latarFile" accept="image/*" hidden>
-          </div>
-          <label class="lbl" for="lantai" style="margin-top:12px">Batas bawah (posisi lantai)</label>
+          <label class="lbl">Latar</label>
+          <div class="lpick" id="latarPick"></div>
+          <input type="file" id="latarFile" accept="image/*" multiple hidden>
+                    <label class="lbl" for="lantai" style="margin-top:12px">Batas bawah (posisi lantai)</label>
           <input type="range" id="lantai" min="50" max="98" step="1">
           <label class="lbl" for="jarak" style="margin-top:12px">Jarak tumpukan ke tepi (kiri, kanan, atas)</label>
           <input type="range" id="jarak" min="0" max="20" step="1">
@@ -407,19 +427,17 @@
       </div>
 
       <div class="actions">
-        <button class="btn ghost" id="reset" type="button">Reset</button>
+        <button class="btn ghost" id="dbSimpan" type="button">Simpan ke database</button>
         <button class="btn" id="xlsExport" type="button">Simpan</button>
       </div>
       <div class="actions zip-row">
-        <button class="mini" id="zipExport" type="button">Simpan ZIP</button>
         <button class="mini" id="imgExport" type="button">Simpan gambar saja</button>
       </div>
-      <div class="hint">ZIP berisi Excel, gambar rincian, dan gambar susunan. “Simpan gambar saja” hanya menyimpan gambar susunan produk.</div>
       <div class="actions">
         <button class="btn ghost" id="xlsImport" type="button" style="flex:1">Impor Excel</button>
         <input type="file" id="xlsFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
       </div>
-      <div class="hint">Simpan membuat file Excel saja. Simpan ZIP membuat Excel, gambar rincian, dan gambar susunan sekaligus dalam satu ZIP. Simpan gambar saja hanya menyimpan gambar susunan produk. Impor membaca file Excel dan mengisi nama produk, isi paket, harga jual, serta biaya pribadi. Komisi afiliasi dan pre order mengikuti Pengaturan.</div>
+      <div class="hint">Simpan membuat file Excel. Simpan ke database menyimpan paket (isi, harga, dan susunan gambar) secara online; buka lagi lewat ikon Database paket di atas. Simpan gambar saja hanya menyimpan gambar susunan. Impor Excel tetap bisa dipakai untuk file lama. Komisi afiliasi dan pre order mengikuti Pengaturan.</div>
     </section>
 
     <!-- ===== Halaman database ===== -->
@@ -433,6 +451,18 @@
       <div class="field"><input class="input" id="dbSearch" type="search" placeholder="Cari barang…" autocomplete="off"></div>
       <div class="actions" style="margin:0 0 16px"><button class="btn" id="dbAdd" type="button">+ Tambah barang</button></div>
       <div id="dbList"></div>
+    </section>
+
+    <!-- ===== Halaman database paket ===== -->
+    <section id="pgPaket" hidden>
+      <button class="back" id="backCalc2" type="button">← Kembali ke kalkulator</button>
+      <div class="db-head">
+        <h2>Database paket</h2>
+        <button class="mini" id="pkRefresh" type="button">Muat ulang</button>
+      </div>
+      <div class="status" id="pkStatus"></div>
+      <div class="field"><input class="input" id="pkSearch" type="search" placeholder="Cari paket…" autocomplete="off"></div>
+      <div id="pkList"></div>
     </section>
 
   </div>
@@ -632,7 +662,7 @@ async function sinkron(diam) {
     ITEMS = (j.items || []).map(norm); simpanItems();
     lastSync = Date.now(); simpanLS("pj-lastsync", lastSync);
     syncState = "ok";
-    sinkronGambar();
+    sinkronGambar(); muatPaketDb(true);
   } catch (e) {
     syncState = "err"; syncErr = e.message;
     if (!diam && e.kode !== "KUNCI") toast(e.message);
@@ -783,6 +813,7 @@ function refreshPaket() {
 function updateModal() {
   const dipilih = PAKET.filter(r => r.chosen);
   const mi = $("modal"), hint = $("modalHint");
+  $("jmlJenis").textContent = dipilih.length ? "· " + dipilih.length + " jenis" : "";
   if (dipilih.length) {
     const sum = dipilih.reduce((s, r) => s + Math.round(rowBiji(r)), 0);
     mi.readOnly = true; mi.value = sum.toLocaleString("id-ID");
@@ -910,6 +941,7 @@ $("reset").addEventListener("click", () => {
   isiPribadiAwal();
   PAKET = [newRow()]; modalAuto = false;
   SUSUN = null; $("susunWrap").hidden = true;
+  CURPAKET = null; tampilPaketAktif(null);
   renderPaket();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
@@ -1037,37 +1069,7 @@ const angka = (v) => {
   return isFinite(n) ? n : 0;
 };
 
-/* ---- ZIP sederhana (tanpa kompresi: PNG dan xlsx sudah terkompresi) ---- */
-const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
-const crc32 = (u) => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC_T[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
-async function buatZip(files) {
-  const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
-  const d = new Date();
-  const dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF;
-  const dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
-  for (const f of files) {
-    const data = new Uint8Array(await f.blob.arrayBuffer()), name = enc.encode(f.name), crc = crc32(data);
-    const lh = new DataView(new ArrayBuffer(30));
-    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
-    lh.setUint16(10, dt, true); lh.setUint16(12, dd, true); lh.setUint32(14, crc, true);
-    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
-    parts.push(lh.buffer, name, data);
-    const ch = new DataView(new ArrayBuffer(46));
-    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
-    ch.setUint16(12, dt, true); ch.setUint16(14, dd, true); ch.setUint32(16, crc, true);
-    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
-    central.push(ch.buffer, name);
-    offset += 30 + name.length + data.length;
-  }
-  const csize = central.reduce((s, x) => s + x.byteLength, 0);
-  const end = new DataView(new ArrayBuffer(22));
-  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
-  end.setUint32(12, csize, true); end.setUint32(16, offset, true);
-  return new Blob([...parts, ...central, end.buffer], { type: "application/zip" });
-}
-
-// penuh = false: hanya Excel. penuh = true: Excel + gambar rincian + gambar susunan.
-async function siapkanBerkas(penuh) {
+async function siapkanBerkas() {
   const nama = $("nama").value.trim();
   if (!nama) { toast("Isi nama produk dulu, dipakai untuk nama file"); $("nama").focus(); return null; }
   if (typeof MiniXlsx === "undefined") { toast("File xlsx.js belum ikut diupload"); return null; }
@@ -1105,32 +1107,12 @@ async function siapkanBerkas(penuh) {
   }
   const xlsType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   const hasil = [{ blob: new Blob([MiniXlsx.buat(sheets)], { type: xlsType }), name: namaFile(nama, ".xlsx"), type: xlsType }];
-  let catatan = "";
-  if (penuh) {
-    if (d.harga > 0) {
-      const png = await new Promise(res => buatGambar(d, nama, items).toBlob(res, "image/png"));
-      hasil.push({ blob: png, name: namaFile(nama, ".png"), type: "image/png" });
-    } else toast("Harga jual kosong, jadi gambar rincian tidak dibuat", 3500);
-    if (items.length) {
-      try {
-        const r = await pastikanSusunan();
-        if (r.st) {
-          const pngS = await new Promise(res => gambarSusunan(r.st, -1).toBlob(res, "image/png"));
-          hasil.push({ blob: pngS, name: namaFile(nama + " - Susunan", ".png"), type: "image/png" });
-        }
-        const cat = [];
-        if (r.hilang && r.hilang.length) cat.push("gambar belum ada: " + r.hilang.slice(0, 3).join(", ") + (r.hilang.length > 3 ? "…" : ""));
-        if (r.tanpaTinggi && r.tanpaTinggi.length) cat.push("tinggi belum diisi untuk " + r.tanpaTinggi.length + " barang");
-        catatan = cat.join("; ");
-      } catch (e) { catatan = "gambar susunan gagal dibuat"; }
-    }
-  }
-  return { nama, hasil, catatan };
+  return { nama, hasil, catatan: "" };
 }
 
 // Simpan: hanya file Excel
 $("xlsExport").addEventListener("click", async () => {
-  const b = await siapkanBerkas(false);
+  const b = await siapkanBerkas();
   if (b) await kirimBerkas(b.hasil, b.nama, "Pilih “Simpan ke Berkas”", "");
 });
 
@@ -1155,18 +1137,6 @@ $("imgExport").addEventListener("click", async () => {
   finally { btn.disabled = false; btn.textContent = teks; }
 });
 
-// Simpan ZIP: Excel + gambar rincian + gambar susunan dalam satu file
-$("zipExport").addEventListener("click", async () => {
-  const btn = $("zipExport"), teks = btn.textContent;
-  btn.disabled = true; btn.textContent = "Membuat ZIP…";
-  try {
-    const b = await siapkanBerkas(true);
-    if (!b) return;
-    const zip = await buatZip(b.hasil);
-    await kirimBerkas([{ blob: zip, name: namaFile(b.nama, ".zip"), type: "application/zip" }], b.nama, "Pilih “Simpan ke Berkas”", b.catatan);
-  } catch (e) { toast("Gagal membuat ZIP: " + (e.message || e), 5000); }
-  finally { btn.disabled = false; btn.textContent = teks; }
-});
 
 function uraiPaket(wb) {
   const sh = wb.sheets.find(x => x.name.toLowerCase() === "paket") || wb.sheets[0];
@@ -1315,18 +1285,21 @@ function renderDb() {
       if (!confirm("Hapus “" + it.nama + "” dari database?")) return;
       try { await hapusBarang(it.id); toast("Barang dihapus"); } catch (e) { toast(e.message); }
     });
-    ops.append(ug, hg, ub, hp); main.append(ops);
+    const dp = mk("button", "", "Duplikat"); dp.type = "button";
+    dp.addEventListener("click", () => bukaForm({ salin: it }));
+    ops.append(ug, hg, dp, ub, hp); main.append(ops);
     wrap.append(box, main); c.append(wrap, fi); list.append(c);
     segar();
   });
 }
 
 function tampil() {
-  const db = location.hash === "#database";
-  $("pgCalc").hidden = db; $("pgDb").hidden = !db;
-  $("openDb").classList.toggle("on", db);
+  const h = location.hash, db = h === "#database", pk = h === "#paket";
+  $("pgCalc").hidden = db || pk; $("pgDb").hidden = !db; $("pgPaket").hidden = !pk;
+  $("openDb").classList.toggle("on", db); $("openPaketDb").classList.toggle("on", pk);
   window.scrollTo(0, 0);
   if (db) { renderStatus(); renderDb(); if (CONN.url && Date.now() - syncTs > 30000) sinkron(true); }
+  else if (pk) { renderPaketDb(); if (CONN.url && Date.now() - pkTs > 30000) muatPaketDb(true); }
   else refreshPaket();
 }
 window.addEventListener("hashchange", tampil);
@@ -1336,21 +1309,168 @@ $("dbSearch").addEventListener("input", renderDb);
 $("dbRefresh").addEventListener("click", () => sinkron(false));
 $("dbAdd").addEventListener("click", () => bukaForm({}));
 
+/* =============== DATABASE PAKET (online) =============== */
+let PAKETDB = bacaLS("pj-paketdb", []);
+if (!Array.isArray(PAKETDB)) PAKETDB = [];
+let CURPAKET = null, pkState = "", pkErr = "", pkTs = 0;
+const pkNama = (p) => (p.data && p.data.nama) || p.nama || "";
+const newPkId = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+function ringkasItems(its) {
+  const m = new Map(); its.forEach(x => m.set(x.n, (m.get(x.n) || 0) + 1));
+  return [...m].map(([n, k]) => k > 1 ? n + " ×" + k : n).join(", ");
+}
+
+function renderPaketStatus() {
+  const s = $("pkStatus"); if (!s) return;
+  s.classList.toggle("err", pkState === "err");
+  if (!CONN.url || !CONN.kunci) s.textContent = "Belum terhubung ke Apps Script.";
+  else if (pkState === "loading") s.textContent = "Memuat database paket…";
+  else if (pkState === "err") s.textContent = pkErr;
+  else s.textContent = PAKETDB.length + " paket · tersimpan online di spreadsheet";
+}
+async function muatPaketDb(diam) {
+  if (!CONN.url || !CONN.kunci) return;
+  pkState = "loading"; renderPaketStatus();
+  try {
+    const j = await panggilAman("paketList");
+    PAKETDB = Array.isArray(j.pakets) ? j.pakets : []; simpanLS("pj-paketdb", PAKETDB);
+    pkState = "ok"; pkErr = "";
+  } catch (e) {
+    pkState = "err";
+    pkErr = /tidak dikenal/i.test(e.message) ? "Database paket belum aktif di Apps Script. Ganti isi Kode.gs dengan versi terbaru, lalu deploy ulang." : e.message;
+    if (!diam && e.kode !== "KUNCI") toast(pkErr, 5000);
+  }
+  pkTs = Date.now(); renderPaketStatus(); renderPaketDb();
+}
+
+function renderPaketDb() {
+  if ($("pgPaket").hidden) return;
+  renderPaketStatus();
+  const q = $("pkSearch").value.trim().toLowerCase();
+  const list = $("pkList"); list.innerHTML = "";
+  const arr = [...PAKETDB].sort((a, b) => (b.ts || 0) - (a.ts || 0)).filter(p => {
+    const its = (p.data && p.data.items) || [];
+    return !q || q.split(/\s+/).every(w => (pkNama(p) + " " + its.map(x => x.n).join(" ")).toLowerCase().includes(w));
+  });
+  if (!arr.length) { list.append(mk("div", "empty", PAKETDB.length ? "Tidak ada paket yang cocok." : "Belum ada paket. Susun paket di kalkulator, lalu ketuk “Simpan ke database”.")); return; }
+  arr.forEach(p => {
+    const d = p.data || {}, its = d.items || [];
+    const c = mk("div", "card clickable"), top = mk("div", "top");
+    top.append(mk("div", "nm", pkNama(p)), mk("div", "pb", PF[p.plat] ? PF[p.plat].nama : String(p.plat)));
+    c.append(top, mk("div", "sub", its.length + " jenis · Harga jual " + rp(d.harga || 0)), mk("div", "sub clip", ringkasItems(its)));
+    const ops = mk("div", "ops"), bk = mk("button", "", "Buka"), hp = mk("button", "del", "Hapus");
+    bk.type = hp.type = "button"; ops.append(bk, hp); c.append(ops);
+    c.addEventListener("click", () => bukaPaket(p));
+    hp.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (!confirm("Hapus paket “" + pkNama(p) + "” dari database?")) return;
+      try { await panggilAman("paketHapus", { id: p.id }); PAKETDB = PAKETDB.filter(x => x.id !== p.id); simpanLS("pj-paketdb", PAKETDB); if (CURPAKET === p.id) { CURPAKET = null; tampilPaketAktif(null); } renderPaketDb(); toast("Paket dihapus"); }
+      catch (err) { toast(err.message, 4500); }
+    });
+    list.append(c);
+  });
+}
+
+function tampilPaketAktif(rec) {
+  const e = $("paketAktif");
+  e.hidden = !rec;
+  if (rec) e.textContent = "Paket dari database: “" + pkNama(rec) + "”. Ubah lalu ketuk “Simpan ke database” untuk memperbarui.";
+}
+
+async function simpanPaketDb() {
+  const nama = $("nama").value.trim(), dipilih = PAKET.filter(r => r.chosen);
+  if (!nama) { toast("Isi nama produk dulu"); $("nama").focus(); return; }
+  if (!dipilih.length) { toast("Pilih barang di Isi Paket dulu"); return; }
+  if (!CONN.url || !CONN.kunci) { toast("Belum terhubung ke Apps Script"); return; }
+  const ada = PAKETDB.find(p => p.plat === PLAT && pkNama(p).toLowerCase() === nama.toLowerCase());
+  if (ada && ada.id !== CURPAKET && !confirm("Paket “" + pkNama(ada) + "” sudah ada di database. Timpa dengan yang ini?")) return;
+  const id = ada ? ada.id : newPkId();
+  const btn = $("dbSimpan"), teks = btn.textContent; btn.disabled = true; btn.textContent = "Menyimpan…";
+  try {
+    const r = await pastikanSusunan();
+    const r1 = (v) => Math.round(v * 10) / 10;
+    const susun = r.st ? { items: r.st.items.map(o => ({ i: o.idx, x: r1(o.x), y: r1(o.y), w: r1(o.w), h: r1(o.h), z: o.z })), latar: LATAR_ID, lantai: LANTAI, margin: MARGIN } : null;
+    const data = { nama, harga: num("harga"), bll: num("bll"), ops: num("ops"), inv: num("inv"), items: dipilih.map(x => ({ n: x.nama, s: Math.round(rowBiji(x)) })), susun };
+    const j = await panggilAman("paketSimpan", { id, nama, plat: PLAT, data });
+    const rec = { id, nama, plat: PLAT, ts: Number(j.ts) || Date.now(), data };
+    PAKETDB = PAKETDB.filter(p => p.id !== id); PAKETDB.push(rec); simpanLS("pj-paketdb", PAKETDB);
+    CURPAKET = id; tampilPaketAktif(rec);
+    const cat = !r.st && r.hilang && r.hilang.length ? " Susunan gambar tidak ikut tersimpan karena gambar belum diupload: " + r.hilang.slice(0, 3).join(", ") + "." : "";
+    toast("Paket tersimpan di database." + cat, cat ? 6000 : 2800);
+  } catch (e) {
+    toast("Gagal menyimpan paket: " + (/tidak dikenal/i.test(e.message) ? "Apps Script belum diperbarui (Kode.gs)." : e.message), 6000);
+  } finally { btn.disabled = false; btn.textContent = teks; }
+}
+
+// Pulihkan susunan gambar yang tersimpan bersama paket (posisi manual ikut kembali).
+async function pulihkanSusunan(sv) {
+  const { list, hilang, tanpaTinggi } = await kumpulList();
+  if (!list.length) { SUSUN = null; $("susunWrap").hidden = true; infoSusun("Gambar belum diupload untuk: " + hilang.join(", ") + ".", true); return; }
+  const latar = await muatLatar();
+  let items = null;
+  if (sv && Array.isArray(sv.items) && sv.items.length === list.length && sv.items.every(o => Number.isInteger(o.i) && o.i >= 0 && o.i < list.length)) {
+    items = sv.items.map(o => {
+      const l = list[o.i], w = o.h * l.cv.width / l.cv.height;   // lebar mengikuti gambar produk sekarang agar tidak penyet
+      return { idx: o.i, nama: l.nama, cv: l.cv, h: o.h, w, x: o.x + o.w / 2 - w / 2, y: o.y, z: o.z };
+    });
+  }
+  SUSUN = { key: kunciPaket(), seed: 1, latar, list, items: items || susunOtomatis(list, 1), sel: -1 };
+  tampilSusun({ st: SUSUN, hilang, tanpaTinggi });
+  if (items) infoSusun("Susunan gambar dari paket yang tersimpan. Posisi bisa digeser lagi, lalu simpan ke database untuk memperbarui.", false);
+}
+
+async function bukaPaket(pk) {
+  const d = pk.data || {};
+  if (PF[pk.plat] && pk.plat !== PLAT) { PLAT = pk.plat; simpanLS("pj-platform", PLAT); applyPlatform(); }
+  $("nama").value = pkNama(pk);
+  $("harga").value = d.harga ? fmtNum(d.harga) : "";
+  ["bll", "ops", "inv"].forEach(k => { $(k).value = fmtNum(d[k] || 0); });
+  PAKET = (d.items || []).map(x => ({ nama: x.n, chosen: true, snap: Number(x.s) || 0 }));
+  if (!PAKET.length) PAKET = [newRow()];
+  modalAuto = false; SUSUN = null; $("susunWrap").hidden = true;
+  const sv = d.susun || null;
+  if (sv) {
+    if (typeof sv.latar === "string") { LATAR_ID = sv.latar; simpanLS("pj-latar", LATAR_ID); LATAR = null; }
+    if (typeof sv.lantai === "number") { LANTAI = Math.min(0.98, Math.max(0.5, sv.lantai)); simpanLS("pj-lantai", LANTAI); $("lantai").value = Math.round(LANTAI * 100); }
+    if (typeof sv.margin === "number") { MARGIN = Math.min(0.2, Math.max(0, sv.margin)); simpanLS("pj-margin", MARGIN); $("jarak").value = Math.round(MARGIN * 100); }
+    renderLatarPick();
+  }
+  CURPAKET = pk.id; tampilPaketAktif(pk);
+  if (location.hash) location.hash = ""; else tampil();
+  renderPaket();
+  try { await pulihkanSusunan(sv); } catch (e) { toast("Susunan gambar gagal dipulihkan", 3500); }
+  window.scrollTo({ top: 0 });
+  toast("Paket dibuka");
+}
+
+$("pkSearch").addEventListener("input", renderPaketDb);
+$("pkRefresh").addEventListener("click", () => muatPaketDb(false));
+$("backCalc2").addEventListener("click", () => { location.hash = ""; });
+$("openPaketDb").addEventListener("click", () => { location.hash = location.hash === "#paket" ? "" : "#paket"; });
+$("dbSimpan").addEventListener("click", simpanPaketDb);
+
+
 /* =============== FORM BARANG =============== */
 let FORM = {};
+function namaSalinan(n) {
+  const dasar = n.replace(/\s*\(\d+\)\s*$/, "");
+  for (let k = 2; k < 100; k++) { const c = dasar + " (" + k + ")"; if (!findByName(c)) return c; }
+  return dasar + " (salinan)";
+}
 function bukaForm(opt) {
   FORM = opt || {};
   const it = FORM.id != null ? ITEMS.find(i => i.id === FORM.id) : null;
-  $("fTitle").textContent = it ? "Ubah barang" : "Tambah barang";
-  $("f_nama").value = it ? it.nama : (FORM.nama || "");
-  $("f_dus").value = it && it.dus ? fmtNum(it.dus) : "";
-  $("f_isi").value = it && it.isi ? String(it.isi) : "";
-  $("f_tinggi").value = it && it.tinggi ? String(it.tinggi).replace(".", ",") : "";
+  const src = FORM.salin || null, dasar = it || src;
+  $("fTitle").textContent = it ? "Ubah barang" : src ? "Duplikat barang" : "Tambah barang";
+  $("f_nama").value = it ? it.nama : src ? namaSalinan(src.nama) : (FORM.nama || "");
+  $("f_dus").value = dasar && dasar.dus ? fmtNum(dasar.dus) : "";
+  $("f_isi").value = dasar && dasar.isi ? String(dasar.isi) : "";
+  $("f_tinggi").value = dasar && dasar.tinggi ? String(dasar.tinggi).replace(".", ",") : "";
   $("fErr").textContent = ""; $("fSave").disabled = false; $("fSave").textContent = "Simpan";
-  FORM.file = null; tampilFormGambar(it ? it.nama : ""); segarRef();
+  FORM.file = null; tampilFormGambar(dasar ? dasar.nama : ""); segarRef();
   previewForm();
   $("formOv").classList.add("show");
-  setTimeout(() => $(FORM.nama || it ? "f_dus" : "f_nama").focus(), 60);
+  setTimeout(() => { const f = $(FORM.nama || it ? "f_dus" : "f_nama"); f.focus(); if (src) f.select(); }, 60);
 }
 function tutupForm() { $("formOv").classList.remove("show"); }
 function previewForm() {
@@ -1420,6 +1540,7 @@ $("fSave").addEventListener("click", async () => {
     const cb = FORM.onSaved, it = findByName(nama);
     let gp = "";
     if (FORM.file) { try { gp = pesanUnggah(await unggahProduk(nama, FORM.file)); } catch (e) { gp = "Barang tersimpan, tapi gambar gagal: " + e.message; } }
+    else if (FORM.salin) { try { const rec = await ambilRec(FORM.salin.nama); if (rec && rec.blob) { await simpanGambarBlob(nama, rec.blob); gp = "Gambar ikut disalin."; } } catch (e) {} }
     tutupForm(); toast(gp ? "Barang tersimpan. " + gp : "Barang tersimpan", gp ? 5000 : 2800);
     renderDb();
     if (cb && it) cb(it);
@@ -1489,7 +1610,8 @@ function pangkasGambar(im) {
 }
 
 /* ---- Penyimpanan gambar: IndexedDB di perangkat + Google Drive lewat Apps Script ---- */
-const LATAR_KEY = "__latar__";
+const LATAR_LAMA = "__latar__";
+let LATAR_ID = bacaLS("pj-latar", "__latar__");   // latar terpilih ("" = polos). "__latar__" = latar lama sebelum ada pustaka
 const imgKey = (n) => String(n).trim().toLowerCase();
 const IMGDB = (() => {
   let dbp = null;
@@ -1572,9 +1694,10 @@ function gambarProduk(nama) {
 let LATAR = null;
 function muatLatar() {
   if (!LATAR) LATAR = (async () => {
-    const rec = await ambilRec(LATAR_KEY);
+    if (!LATAR_ID) return null;
+    const rec = await ambilRec(LATAR_ID);
     if (rec && rec.blob) { const im = await muatImg(URL.createObjectURL(rec.blob)); if (im) return im; }
-    for (const u of ["produk/latar.jpg", "produk/latar.png"]) { const im = await muatImg(u); if (im) return im; }
+    if (LATAR_ID === LATAR_LAMA) for (const u of ["produk/latar.jpg", "produk/latar.png"]) { const im = await muatImg(u); if (im) return im; }
     return null;
   })();
   return LATAR;
@@ -1616,7 +1739,7 @@ function sinkronGambar() {
       selesai(); LATAR = null;
       for (const r of daftar) {   // gambar yang sudah ada di perangkat tapi versi Drive lebih baru: perbarui
         const key = imgKey(r.nama), loc = await IMGDB.get(key);
-        if (loc && !loc.pending && loc.ts < Number(r.ts)) { GBR.delete(key); if (key === LATAR_KEY) LATAR = null; if (await cloudAmbil(r.nama)) berubah = true; }
+        if (loc && !loc.pending && loc.ts < Number(r.ts)) { GBR.delete(key); if (key === imgKey(LATAR_ID || "-")) LATAR = null; if (await cloudAmbil(r.nama)) berubah = true; }
       }
       for (const key of await IMGDB.keys()) {   // gambar yang diupload saat offline: kirim ke Drive
         const loc = await IMGDB.get(key);
@@ -1626,7 +1749,7 @@ function sinkronGambar() {
       cloudAda = null;
       if (e.kode !== "KUNCI") { cloudMati = true; gambarErr = e.message; }
     } finally {
-      selesai(); renderStatus(); if (berubah) renderDb(); infoLatar();
+      selesai(); renderStatus(); if (berubah) renderDb(); infoLatar(); renderLatarPick();
     }
   })();
 }
@@ -1800,7 +1923,7 @@ function gambarSusunan(st, sel) {
 
 const kunciPaket = () => PAKET.filter(r => r.chosen).map(r => r.nama.toLowerCase()).join("|");
 
-async function buatSusunan(seed) {
+async function kumpulList() {
   const hilang = [], tanpaTinggi = [], list = [];
   for (const r of PAKET.filter(r => r.chosen)) {
     const cv = await gambarProduk(r.nama);
@@ -1809,6 +1932,10 @@ async function buatSusunan(seed) {
     if (!(t > 0)) { t = TINGGI_STANDAR; if (!tanpaTinggi.includes(r.nama)) tanpaTinggi.push(r.nama); }
     list.push({ nama: r.nama, cv, tinggi: t });
   }
+  return { list, hilang, tanpaTinggi };
+}
+async function buatSusunan(seed) {
+  const { list, hilang, tanpaTinggi } = await kumpulList();
   if (!list.length) { SUSUN = null; return { st: null, hilang, tanpaTinggi }; }
   const latar = await muatLatar();
   SUSUN = { key: kunciPaket(), seed, latar, list, items: susunOtomatis(list, seed), sel: -1 };
@@ -1833,7 +1960,7 @@ function tampilSusun(r) {
   const cat = [];
   if (r.hilang.length) cat.push("Gambar belum diupload: " + r.hilang.join(", ") + ".");
   if (r.tanpaTinggi.length) cat.push("Tinggi belum diisi (dipakai " + TINGGI_STANDAR + " cm): " + r.tanpaTinggi.join(", ") + ".");
-  infoSusun(cat.length ? cat.join(" ") : "Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Tombol Simpan ZIP otomatis ikut membuatnya.", cat.length > 0);
+  infoSusun(cat.length ? cat.join(" ") : "Menyusun gambar semua barang di Isi Paket jadi satu foto piramida. Susunan ikut tersimpan saat paket disimpan ke database.", cat.length > 0);
 }
 function cekSusunBasi() {
   if (SUSUN && SUSUN.key !== kunciPaket()) infoSusun("Isi paket berubah. Ketuk “Susun gambar” lagi untuk memperbarui (posisi manual akan hilang).", true);
@@ -1885,34 +2012,67 @@ $("sFront").addEventListener("click", () => { const it = pilihanSusun(); if (!it
 $("sAcak").addEventListener("click", () => { if (!SUSUN) return; SUSUN.seed++; SUSUN.items = susunOtomatis(SUSUN.list, SUSUN.seed); SUSUN.sel = -1; redrawSusun(); });
 $("sReset").addEventListener("click", () => { if (!SUSUN) return; SUSUN.items = susunOtomatis(SUSUN.list, SUSUN.seed); SUSUN.sel = -1; redrawSusun(); });
 
-/* ---- Latar sendiri + posisi lantai ---- */
+/* ---- Pustaka latar: upload sekali, lalu pilih kapan saja ---- */
+const idLatar = (k) => k === LATAR_LAMA ? 0 : parseInt(String(k).slice(8), 36) || 0;
+async function daftarLatar() {
+  const ks = new Set((await IMGDB.keys()).map(String).filter(k => k.startsWith("__latar")));
+  if (cloudAda) cloudAda.forEach(k => { if (k.startsWith("__latar")) ks.add(k); });
+  return [...ks].sort((a, b) => idLatar(a) - idLatar(b));
+}
 async function infoLatar() {
   const l = await muatLatar();
-  $("latarInfo").textContent = l ? "Memakai latar yang kamu upload. Geser slider sampai dasar tumpukan pas di lantai atau meja latarnya." : "Belum ada latar, memakai latar polos bawaan. Ketuk “Ganti latar” untuk upload latarmu sendiri.";
+  $("latarInfo").textContent = l ? "Latar terpilih dipakai di gambar. Ketuk latar lain untuk mengganti, atau “+ Tambah” untuk upload yang baru." : "Memakai latar polos. Ketuk “+ Tambah” untuk upload latarmu. Latar yang sudah diupload tersimpan dan bisa dipilih kapan saja.";
 }
-async function ubahLatar(file) {
-  if (!file) return;
-  try {
-    if (!/^image\//.test(file.type || "")) throw new Error("File latar harus berupa gambar.");
-    const u = URL.createObjectURL(file); let im;
-    try { im = await muatImg(u); } finally { URL.revokeObjectURL(u); }
-    if (!im) throw new Error("Gambar tidak bisa dibaca.");
-    const k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
-    const c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
-    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
-    const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.88));
-    const cloud = await simpanGambarBlob(LATAR_KEY, blob);
-    LATAR = null; if (SUSUN) { SUSUN.latar = await muatLatar(); redrawSusun(); }
-    infoLatar();
-    toast(cloud === "ok" ? "Latar tersimpan dan tersinkron ke Drive." : cloud ? "Latar tersimpan di perangkat ini, tapi Drive gagal: " + cloud : "Latar tersimpan di perangkat ini.", 4500);
-  } catch (e) { toast(e.message, 4500); }
-}
-$("latarGanti").addEventListener("click", () => $("latarFile").click());
-$("latarFile").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; ubahLatar(f); });
-$("latarHapus").addEventListener("click", async () => {
-  await hapusGambarBlob(LATAR_KEY); LATAR = null;
+async function pilihLatar(key) {
+  LATAR_ID = key; simpanLS("pj-latar", key); LATAR = null;
   if (SUSUN) { SUSUN.latar = await muatLatar(); redrawSusun(); }
-  infoLatar(); toast("Latar dihapus");
+  renderLatarPick(); infoLatar();
+}
+async function tambahLatar(file) {
+  if (!/^image\//.test(file.type || "")) throw new Error("File latar harus berupa gambar.");
+  const u = URL.createObjectURL(file); let im;
+  try { im = await muatImg(u); } finally { URL.revokeObjectURL(u); }
+  if (!im) throw new Error("Gambar tidak bisa dibaca.");
+  const k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
+  const c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+  const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.88));
+  const id = "__latar_" + Date.now().toString(36);
+  return { id, cloud: await simpanGambarBlob(id, blob) };
+}
+let latarRender = 0;
+async function renderLatarPick() {
+  const box = $("latarPick"); if (!box) return;
+  const tok = ++latarRender, keys = await daftarLatar();
+  if (tok !== latarRender) return;
+  const aktif = keys.includes(imgKey(LATAR_ID || "-")) ? imgKey(LATAR_ID) : "";
+  box.innerHTML = "";
+  const tile = (cls, teks) => { const t = mk("div", cls, teks); t.setAttribute("role", "button"); t.tabIndex = 0; return t; };
+  const polos = tile("lt polos" + (!aktif ? " on" : ""), "Polos");
+  polos.addEventListener("click", () => pilihLatar("")); box.append(polos);
+  keys.forEach(k => {
+    const t = tile("lt" + (k === aktif ? " on" : "")), im = document.createElement("img"); im.alt = ""; t.append(im);
+    const del = mk("button", "del", "×"); del.type = "button"; del.setAttribute("aria-label", "Hapus latar"); t.append(del);
+    t.addEventListener("click", (e) => { if (e.target !== del) pilihLatar(k); });
+    del.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (!confirm("Hapus latar ini dari pustaka?")) return;
+      await hapusGambarBlob(k);
+      if (imgKey(LATAR_ID || "-") === k) { LATAR_ID = ""; simpanLS("pj-latar", ""); LATAR = null; if (SUSUN) { SUSUN.latar = null; redrawSusun(); } }
+      renderLatarPick(); infoLatar();
+    });
+    box.append(t);
+    ambilRec(k).then(rec => { if (rec && rec.blob) { const u = URL.createObjectURL(rec.blob); im.onload = () => URL.revokeObjectURL(u); im.src = u; } }).catch(() => {});
+  });
+  const add = tile("lt add", "+ Tambah"); add.addEventListener("click", () => $("latarFile").click()); box.append(add);
+}
+$("latarFile").addEventListener("change", async (e) => {
+  const fs = [...e.target.files]; e.target.value = ""; let last = null;
+  for (const f of fs) { try { last = await tambahLatar(f); } catch (err) { toast(err.message, 4500); } }
+  if (last) {
+    await pilihLatar(last.id);
+    toast(last.cloud === "ok" ? "Latar tersimpan dan tersinkron ke Drive." : last.cloud ? "Latar tersimpan di perangkat ini, tapi Drive gagal: " + last.cloud : "Latar tersimpan di perangkat ini.", 4000);
+  }
 });
 $("lantai").value = Math.round(LANTAI * 100);
 $("jarak").value = Math.round(MARGIN * 100);
@@ -2004,6 +2164,7 @@ function kunciPerangkat(pesan) {
   PAKET = [newRow()];
   SUSUN = null; $("susunWrap").hidden = true;
   IMGDB.clear(); GBR.clear(); LATAR = null; cloudAda = null; daftarP = null; gambarErr = "";
+  PAKETDB = []; simpanLS("pj-paketdb", []); CURPAKET = null;
   tutupForm(); tutupSetting();
   if (location.hash) location.hash = "";
   renderPaket(); renderDb(); renderStatus();
@@ -2021,7 +2182,7 @@ $("lockForm").addEventListener("submit", async (e) => {
     CONN.kunci = k; simpanLS("pj-kunci", k);
     ITEMS = (j.items || []).map(norm); simpanItems();
     lastSync = Date.now(); simpanLS("pj-lastsync", lastSync); syncState = "ok"; syncTs = Date.now();
-    sinkronGambar();
+    sinkronGambar(); muatPaketDb(true);
     bukaKunci(); renderStatus(); renderDb(); renderPaket();
   } catch (err) {
     $("lockErr").textContent = err.message; $("lockInput").value = ""; $("lockInput").focus();
@@ -2064,7 +2225,7 @@ renderPaket();
 applyPlatform();
 renderStatus();
 tampil();
-infoLatar();
+infoLatar(); renderLatarPick();
 if (!bacaLS("pj-info-aff", false)) {   // pemberitahuan satu kali: afiliasi & pre order kini ikut Pengaturan
   simpanLS("pj-info-aff", true);
   const c = cfg();
